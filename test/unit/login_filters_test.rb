@@ -25,7 +25,7 @@ context 'The Login Filter' do
   setup do
     @kls = Object.new
     class << @kls ; include UserSystemLoginFilters ; end
-    @user = User.create(U())
+    @user = create_user
     @kls.stubs(:session).returns({:user_id => @user.id})
   end
 
@@ -74,7 +74,7 @@ context 'A class incliding the login filters' do
   setup do
     class Kls ; include UserSystemLoginFilters ; end
     @kls = Kls
-    @user = User.create(U())
+    @user = create_user
   end
 
   it 'can request only certain users to have access to controller' do

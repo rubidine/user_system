@@ -38,7 +38,7 @@ context 'Sessions Controller' do
     @request = ActionController::TestRequest.new
     @response = ActionController::TestResponse.new
 
-    @user = User.create!(U())
+    @user = create_user
     @user.verify!
   end
 

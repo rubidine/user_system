@@ -23,7 +23,7 @@ require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
 
 context 'User' do
   setup do
-    @user = User.create!(USER_ATTRIBUTES)
+    @user = create_user
   end
 
   it 'can be disabled' do
@@ -35,7 +35,11 @@ context 'User' do
   end
 
   it 'requires passphrase_confirmation to create account' do
-    u = User.create(U(:passphrase_confirmation => :___remove, :login => 'chester2'))
+    atr = FixtureReplacementController::AttributeCollection.find_by_fixture_name(:user).hash
+    atr.delete(:passphrase_confirmation)
+    atr[:login] = 'chester2'
+    u = User.new(atr)
+    u.valid?
     assert u.errors.on(:passphrase)
   end
 
@@ -52,7 +56,8 @@ context 'User' do
   end
 
   it 'will not be valid if another user has the same login (case insensitive)' do
-    u = User.create(U(:email => 'email@another.com', :login => 'cHESTER'))
+    u = new_user(:email => 'email@another.com', :login => 'cHESTER')
+    u.valid?
     assert u.errors.on(:login)
   end
 
@@ -66,7 +71,8 @@ context 'User' do
     end
 
     it 'should not create account without giving an email' do
-      user = User.create(U(:email => :___remove))
+      user = new_user(:email => nil)
+      user.valid?
       assert (user.errors.on(:email) || user.errors.on(:login))
     end
 
@@ -81,7 +87,7 @@ context 'User' do
     end
 
     it 'should create account without giving email adress' do
-      user = User.create(U(:email => :___remove))
+      user = create_user(:email => nil)
       assert !user.new_record?
     end
 
@@ -90,7 +96,8 @@ context 'User' do
     end
 
     it 'cannot create an account without giving a login' do
-      user = User.create(U(:login => :___remove))
+      user = new_user(:login => nil)
+      user.valid?
       assert user.errors.on(:login)
     end
 
@@ -100,7 +107,8 @@ context 'User' do
       end
 
       it 'cannot create an account without giving an email' do
-        user = User.create(U(:email => :___remove))
+        user = new_user(:email => nil)
+        user.valid?
         assert user.errors.on(:email)
       end
 
