@@ -40,19 +40,50 @@ class User < ActiveRecord::Base
   attr_protected :security_token, :security_token_created_at
   attr_protected :verified, :reset_passphrase, :disabled_from, :disabled_until
 
+  named_scope :verified, {:conditions => {:verified => true}}
+  named_scope :unverified, {:conditions => {:verified => false}}
+  named_scope :disabled,
+              lambda{
+                {
+                  :conditions => [
+                    'disabled_until > ?
+                    OR disabled_from < ?',
+                    Time.now, Time.now
+                  ]
+                }
+              }
+  named_scope :active,
+              lambda{
+                {
+                  :conditions => [
+                    'disabled_from IS NULL
+                    OR disabled_until < ?
+                    OR disabled_from > ?',
+                    Time.now, Time.now
+                  ]
+                }
+              }
+  named_scope :ordered_by_login, {:order => 'login'}
+
+  ##
+  #
   # Users can be disabled at points in time.
   # This checks if they are or not.  It defaults to right now, but could
   # check any time, but only one disabled period is stored on the record,
   # so we have no way of checking their historical disabling.
+  #
   def disabled? time=Time.now
     return false unless disabled_from
     return true unless disabled_until
     return (disabled_from <= time && disabled_until > time)
   end
 
+  ##
+  #
   # Disable this user.  It goes into effect right now.  By default it
   # will diabled them forever, but you can specify and end time.
   # If you specify a time before the current time, it will be set to nil.
+  #
   def disable! until_time=nil
     until_time and (until_time = nil if until_time < Time.now)
     self.disabled_from = Time.now
@@ -60,12 +91,15 @@ class User < ActiveRecord::Base
     save!
   end
 
+  ##
+  #
   # Login is a protected field.  It should not be reset once it has been
   # committed.  Also, we track lowercase_login to compute uniqueness against
   # other logins, since we want logins to be case insensitive, so set it here
   # as well.  Additionally, configuration may specify that we use an
   # email address as a login, so set the email address off this field
   # if that is the case.
+  #
   def login= new_login
     return if UserSystem.email_is_login
 
@@ -75,28 +109,40 @@ class User < ActiveRecord::Base
     end
   end
 
+  ##
+  #
   # Passwords are hased, so compute the hash when assigning it.
+  #
   def passphrase= new_passphrase
     write_attribute(:passphrase, pw_hash(new_passphrase))
   end
 
+  ##
+  #
   # Email can also act as the login name of the user based on configuration
   #
   # Changing the email when verification is on will mark the record as
   # unverified, and wait for the user to verify the new email address.
+  #
   def email= eml
     write_attribute :email, eml
     write_attribute :login, eml if UserSystem.email_is_login
     write_attribute :verified, false if UserSystem.verify_email and !new_record?
   end
 
+  ##
+  #
   # Passwords are hased, so compute the hash when assigning it.
+  #
   def passphrase_confirmation= new_passphrase
     @passphrase_confirmation = pw_hash(new_passphrase)
   end
 
+  ##
+  #
   # Login with the given login and passphrase.
   # Will return a user instance or nil.
+  #
   def self.login login, passphrase=nil
     if login.is_a?(Hash)
       passphrase = login[:passphrase]
@@ -112,6 +158,7 @@ class User < ActiveRecord::Base
     end
   end
 
+  ##
   #
   # Set a new security token and timeout
   #
@@ -123,6 +170,7 @@ class User < ActiveRecord::Base
     save!
   end
 
+  ##
   #
   # Find by security token, if token has not expired
   #
@@ -137,6 +185,7 @@ class User < ActiveRecord::Base
   end
 
   ##
+  #
   # Mark the record as verified
   #
   def verify!

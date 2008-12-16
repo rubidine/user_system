@@ -32,7 +32,6 @@ class UsersController < ApplicationController
 
   #
   # show the form to create a new user
-  # TODO make sure accounts are to be publicly available
   #
   def new
     @user = User.new
