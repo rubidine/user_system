@@ -22,6 +22,7 @@
 module UserSystemLoginFilters
 
   private
+
   def self.included(kls)
     kls.send :extend, ClassMethods
   end
@@ -47,8 +48,6 @@ module UserSystemLoginFilters
 
     validate_user(current_user)
   end
-
-  private
 
   #
   # This method is used internally by only_for_user class method

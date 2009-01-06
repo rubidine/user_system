@@ -28,6 +28,8 @@
 #   UserRedirect.send :include, MyModuleWithMyCallback
 module UserRedirect
 
+  private
+
   @@callback_names = [:verify_email, :inform_disabled, :reset_passphrase]
   mattr_accessor :callback_names
 
@@ -49,12 +51,13 @@ module UserRedirect
 
     kls.send :include, ActiveSupport::Callbacks
     kls.send :define_callbacks, :on_redirection
+    kls.send :hide_action, :callback_names, :callback_names=,
+                           :included_in, :included_in=,
+                           :run_callbacks
 
     # include all the callbacks that are already defined
     callback_names.each{|x| kls.on_redirection(x)}
   end
-
-  private
 
   # Walk through all the callbacks that have been registered until
   # one redirects.

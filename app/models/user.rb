@@ -85,16 +85,6 @@ class User < ActiveRecord::Base
                   :conditions => {'disabled_periods.id' => nil}
                 }
               }
-              lambda{
-                {
-                  :conditions => [
-                    'disabled_from IS NULL
-                    OR disabled_until < ?
-                    OR disabled_from > ?',
-                    Time.now, Time.now
-                  ]
-                }
-              }
   named_scope :ordered_by_login, {:order => 'login'}
 
   ##
