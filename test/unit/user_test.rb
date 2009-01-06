@@ -27,11 +27,13 @@ context 'User' do
   end
 
   it 'can be disabled' do
+    assert User.active.find(@user.id)
     @user.disable!
 
     assert @user.disabled?
     @user.reload
     assert @user.disabled?
+    assert User.disabled.find(@user.id)
   end
 
   it 'requires passphrase_confirmation to create account' do
@@ -83,15 +85,12 @@ context 'User' do
 
   context 'Without configuration email_is_login' do
     setup do
+      User.delete_all
       UserSystem.email_is_login = false
     end
 
-    it 'should create account without giving email adress' do
-      user = create_user(:email => nil)
-      assert !user.new_record?
-    end
-
     it 'should perform login without giving email adress' do
+      create_user
       assert User.login('chester', 'test-test')
     end
 
@@ -113,6 +112,19 @@ context 'User' do
       end
 
     end
+
+    context 'Without configuration verify email' do
+      setup do
+        User.delete_all
+        UserSystem.verify_email = false
+      end
+
+      it 'can create an account without giving an email' do
+        user = new_user(:email => nil)
+        assert user.valid?
+      end
+
+    end
   end
 
   context 'With configuration verify_email' do
@@ -120,8 +132,9 @@ context 'User' do
       UserSystem.verify_email = true
     end
 
-    it 'is marked unverified when email changes' do
-      @user.email = 'asdf@host.com'
+    it 'should unverify email when email changes' do
+      assert @user.verified?
+      @user.email = 'another@email.com'
       assert !@user.verified?
     end
   end

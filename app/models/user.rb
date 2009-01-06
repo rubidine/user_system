@@ -24,8 +24,14 @@
 #
 class User < ActiveRecord::Base
 
+  has_many :disabled_periods, :as => :disabled_item
+  belongs_to :current_disabled_period,
+             :foreign_key => :disabled_period_id,
+             :class_name => 'DisabledPeriod'
+
   before_create :mark_as_verified_if_email_verification_not_required
   before_create :set_security_token_if_verification_needed
+  before_save :set_lowercase_login
 
   validate :presence_of_email_if_required
   validates_presence_of :login, :passphrase
@@ -44,15 +50,41 @@ class User < ActiveRecord::Base
   named_scope :unverified, {:conditions => {:verified => false}}
   named_scope :disabled,
               lambda{
+                cond = merge_conditions({
+                         'disabled_periods.disabled_item_type' => 'User'
+                       })
                 {
+                  :joins => [
+                    "LEFT JOIN disabled_periods ON #{cond} " +
+                    "AND disabled_periods.disabled_item_id = users.id"
+                  ],
                   :conditions => [
-                    'disabled_until > ?
-                    OR disabled_from < ?',
+                    'disabled_periods.disabled_from <= ? ' +
+                    'AND (disabled_periods.disabled_until > ? ' +
+                    'OR disabled_periods.disabled_until IS NULL)',
                     Time.now, Time.now
                   ]
                 }
               }
   named_scope :active,
+              lambda{
+                cond = merge_conditions(
+                         {'disabled_periods.disabled_item_type' => 'User'},
+                         [
+                           'disabled_periods.disabled_from <= ? ' +
+                           'AND (disabled_periods.disabled_until > ? ' +
+                           'OR disabled_periods.disabled_until IS NULL)',
+                           Time.now, Time.now
+                         ]
+                       )
+                {
+                  :joins => [
+                    "LEFT JOIN disabled_periods ON #{cond} " +
+                    "AND disabled_periods.disabled_item_id = users.id"
+                  ],
+                  :conditions => {'disabled_periods.id' => nil}
+                }
+              }
               lambda{
                 {
                   :conditions => [
@@ -88,6 +120,7 @@ class User < ActiveRecord::Base
     until_time and (until_time = nil if until_time < Time.now)
     self.disabled_from = Time.now
     self.disabled_until = until_time
+    DisabledPeriod.disable! self, Time.now, until_time
     save!
   end
 
@@ -104,7 +137,7 @@ class User < ActiveRecord::Base
     return if UserSystem.email_is_login
 
     # don't allow it to be re-set
-    if new_record? or login.nil? or new_login.downcase == login.downcase
+    if new_record? or login.nil? or (dc=new_login.downcase) == login.downcase
       write_attribute(:login, new_login)
     end
   end
@@ -126,7 +159,9 @@ class User < ActiveRecord::Base
   #
   def email= eml
     write_attribute :email, eml
-    write_attribute :login, eml if UserSystem.email_is_login
+    if UserSystem.email_is_login
+      write_attribute :login, eml
+    end
     write_attribute :verified, false if UserSystem.verify_email and !new_record?
   end
 
@@ -149,7 +184,7 @@ class User < ActiveRecord::Base
       login = login[:login]
     end
 
-    u = find(:first, :conditions => ["LOWER(login) = ?", login.downcase])
+    u = find(:first, :conditions => {:lowercase_login =>login.downcase})
     if (u and (u.passphrase == pw_hash(passphrase)))
       u.update_attribute :last_login, Time.now
       u
@@ -233,5 +268,9 @@ class User < ActiveRecord::Base
     chrs = UserSystem.security_token_characters
     len.times{ rv << chrs[rand(chrs.length)] }
     rv
+  end
+
+  def set_lowercase_login
+    self.lowercase_login = self.login.downcase
   end
 end

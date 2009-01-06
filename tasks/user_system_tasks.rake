@@ -41,6 +41,14 @@ namespace :user_system do
     t.verbose = true
   end
 
+  desc 'Test the UserSystem Extension (only unit tests).'
+  Rake::TestTask.new('test:units') do |t|
+    t.ruby_opts << "-r#{RAILS_ROOT}/test/test_helper"
+    t.libs << File.join(File.dirname(__FILE__), '..', 'lib')
+    t.pattern = File.join(File.dirname(__FILE__), '..', 'test/unit/*_test.rb')
+    t.verbose = true
+  end
+
   if defined?(Rcov)
     desc 'Run code coverate analysis'
     Rcov::RcovTask.new do |t|
