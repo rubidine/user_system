@@ -25,6 +25,7 @@ module UserSystemLoginFilters
 
   def self.included(kls)
     kls.send :extend, ClassMethods
+    kls.send :helper_method, :current_user
   end
 
   #
