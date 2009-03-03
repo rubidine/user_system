@@ -73,8 +73,9 @@ context 'Users Controller' do
 
     it 'should allow creation if public account creation is turned on' do
       @user.destroy
-      UsersController.any_instance.expects(:user_redirect)
       post 'create', :user => atr = FixtureReplacementController::AttributeCollection.find_by_fixture_name(:user).hash
+      atr.symbolize_keys!
+      assert User.login(:login => atr[:login], :passphrase => atr[:passphrase])
     end
 
   end

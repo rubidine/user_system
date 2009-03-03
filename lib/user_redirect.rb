@@ -36,6 +36,9 @@ module UserRedirect
   @@included_in = []
   mattr_accessor :included_in
 
+  @@inclusive = []
+  mattr_accessor :inclusive
+
   # remember the callback for when we are included in something later on
   # add the callback to everything we are already included in
   def self.on_redirection symbol
@@ -49,6 +52,10 @@ module UserRedirect
     # remember this in case other callbacks come online later
     included_in  << kls
 
+    # if we already have other modules providing callbacks, mix them in
+    inclusive.each{|m| kls.send :include, m}
+
+    # introduce callback mojo
     kls.send :include, ActiveSupport::Callbacks
     kls.send :define_callbacks, :on_redirection
     kls.send :hide_action, :callback_names, :callback_names=,
@@ -57,6 +64,12 @@ module UserRedirect
 
     # include all the callbacks that are already defined
     callback_names.each{|x| kls.on_redirection(x)}
+  end
+
+  def self.include mod
+    super
+    included_in.each{|c| c.send(:include, mod)}
+    inclusive << mod
   end
 
   # Walk through all the callbacks that have been registered until
@@ -98,20 +111,4 @@ module UserRedirect
     redirect_to '/'
   end
 
-
-=begin
-  def user_redirect user_record
-    if UserSystem.verify_email and !user_record.verified?
-      redirect_to request_verification_user_path(user_record)
-    elsif user_record.disabled?
-      redirect_to inform_disabled_user_path(user_record)
-    elsif user_record.reset_passphrase?
-      redirect_to edit_user_path(user_record)
-    elsif session[:last_params]
-      redirect_to session[:last_params]
-    else
-      redirect_to '/'
-    end
-  end
-=end
 end

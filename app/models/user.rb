@@ -50,9 +50,12 @@ class User < ActiveRecord::Base
   named_scope :unverified, {:conditions => {:verified => false}}
   named_scope :disabled,
               lambda{
+                # TODO OPTIMIZE make sure an index is on disabled_item_type
+                # and if using mysql do "BINARY 'USER'" to use index
                 cond = merge_conditions({
                          'disabled_periods.disabled_item_type' => 'User'
                        })
+                now = Time.now
                 {
                   :joins => [
                     "LEFT JOIN disabled_periods ON #{cond} " +
@@ -62,19 +65,20 @@ class User < ActiveRecord::Base
                     'disabled_periods.disabled_from <= ? ' +
                     'AND (disabled_periods.disabled_until > ? ' +
                     'OR disabled_periods.disabled_until IS NULL)',
-                    Time.now, Time.now
+                    now, now
                   ]
                 }
               }
   named_scope :active,
               lambda{
+                now = Time.now
                 cond = merge_conditions(
                          {'disabled_periods.disabled_item_type' => 'User'},
                          [
                            'disabled_periods.disabled_from <= ? ' +
                            'AND (disabled_periods.disabled_until > ? ' +
                            'OR disabled_periods.disabled_until IS NULL)',
-                           Time.now, Time.now
+                           now, now
                          ]
                        )
                 {
@@ -107,10 +111,11 @@ class User < ActiveRecord::Base
   # If you specify a time before the current time, it will be set to nil.
   #
   def disable! until_time=nil
-    until_time and (until_time = nil if until_time < Time.now)
-    self.disabled_from = Time.now
+    now = Time.now
+    until_time and (until_time = nil if until_time < now)
+    self.disabled_from = now
     self.disabled_until = until_time
-    DisabledPeriod.disable! self, Time.now, until_time
+    DisabledPeriod.disable! self, now, until_time
     save!
   end
 
@@ -168,13 +173,12 @@ class User < ActiveRecord::Base
   # Login with the given login and passphrase.
   # Will return a user instance or nil.
   #
-  def self.login login, passphrase=nil
-    if login.is_a?(Hash)
-      passphrase = login[:passphrase]
-      login = login[:login]
-    end
+  def self.login options
+    passphrase = options[:passphrase]
+    login = options[:login]
+    scope = options[:scope] || self
 
-    u = find(:first, :conditions => {:lowercase_login =>login.downcase})
+    u = scope.find(:first, :conditions => {:lowercase_login =>login.downcase})
     if (u and (u.passphrase == pw_hash(passphrase)))
       u.update_attribute :last_login, Time.now
       u
@@ -203,7 +207,7 @@ class User < ActiveRecord::Base
     find(
       :first,
       :conditions => [
-        'security_token = ? AND security_token_valid_until >= ?',
+        'security_token = ? AND (security_token_valid_until >= ? or security_token_valid_until IS NULL)',
         tok, Time.now
       ]
     )
@@ -215,6 +219,21 @@ class User < ActiveRecord::Base
   #
   def verify!
     update_attribute(:verified, true)
+  end
+
+  ##
+  #
+  # Override the security_token getter, generate one if none exists
+  #
+  def security_token
+    unless read_attribute(:security_token)
+      if new_record?
+        self.security_token = generate_security_token
+      else
+        update_attribute(:security_token, generate_security_token)
+      end
+    end
+    read_attribute(:security_token)
   end
 
   private

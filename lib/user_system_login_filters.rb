@@ -55,6 +55,7 @@ module UserSystemLoginFilters
   #
   def require_user_login *valid_users
     if !current_user or (!valid_users.empty? and !valid_users.include?(current_user))
+      # TODO: if current_user, but not valid, use 403, otherwise 401
       session[:last_params] = params
       # XXX messages should be l10n'd and configurable
       flash[:notice] = 'You need to login to proceed.'

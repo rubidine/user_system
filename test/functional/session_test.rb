@@ -19,6 +19,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
+
 # because this is an implementation detail, dont rely on it.  move it to func
 def assert_logged_in specific_user=nil
   if specific_user

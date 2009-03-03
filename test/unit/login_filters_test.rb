@@ -23,8 +23,10 @@ require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
 
 context 'The Login Filter' do
   setup do
-    @kls = Object.new
-    class << @kls ; include UserSystemLoginFilters ; end
+    class M < ActionController::Base
+      include UserSystemLoginFilters
+    end
+    @kls = M.new
     @user = create_user
     @kls.stubs(:session).returns({:user_id => @user.id})
   end
@@ -60,7 +62,6 @@ context 'The Login Filter' do
     it 'should stop processing if user is not verified' do
       @kls.stubs(:session).returns({:user_id => @user.id})
       @kls.stubs(:request_verification_user_path).returns('PAFF')
-
       @user.update_attribute :verified, false
       @kls.expects(:redirect_to).with('PAFF')
       @kls.send(:require_login)
@@ -72,7 +73,7 @@ end
 
 context 'A class incliding the login filters' do
   setup do
-    class Kls ; include UserSystemLoginFilters ; end
+    class Kls < ActionController::Base ; include UserSystemLoginFilters ; end
     @kls = Kls
     @user = create_user
   end

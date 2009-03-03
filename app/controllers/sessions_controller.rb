@@ -26,7 +26,7 @@ class SessionsController < ApplicationController
   include UserRedirect
 
   def create
-    if u = User.login(params[:session])
+    if u = perform_user_login
       session[:user_id] = u.id
       user_redirect(u)
     else
@@ -41,5 +41,14 @@ class SessionsController < ApplicationController
     session[:user_id] = nil
     flash.now[:notice] = "You are now logged out"
     redirect_to :action => 'new'
+  end
+
+  private
+  def perform_user_login
+    User.login(params[:session].merge(:scope => login_scope))
+  end
+
+  def login_scope
+    User
   end
 end

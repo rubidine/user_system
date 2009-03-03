@@ -2,20 +2,14 @@ require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
 
 context 'A class including UserRedirect' do
   setup do
-    class M
-      # imitate action controller
-      def self.hide_action *actions ; end
-
+    class M < ActionController::Base
       include UserRedirect
-      def performed? ; @performed ; end
-      def redirect_to *opts ; @performed = true ; @redirected_to = opts ; end
-      def session ; {} ; end
-
-      def edit_user_path(user_record) ; 'EDIT_USER' ; end
-
     end
 
     @kls = M.new
+    @kls.session = {}
+    @kls.request = ActionController::TestRequest.new
+    @kls.response = ActionController::TestResponse.new
 
     @user = create_user
     @user.verified = true
@@ -42,12 +36,9 @@ context 'A class including UserRedirect' do
         def new_callback
           # no op
         end
-
-        def self.included kls
-          kls.send :on_redirection, :new_callback
-        end
       end
       UserRedirect.send :include, Ext
+      UserRedirect.send :on_redirection, :new_callback
     end
 
     it 'should add new callbacks to old include' do
@@ -55,8 +46,7 @@ context 'A class including UserRedirect' do
     end
 
     it 'should add all callbacks to new include' do
-      class C2
-        def self.hide_action *actions ; end
+      class C2 < ActionController::Base
         include UserRedirect
       end
       assert C2.on_redirection_callback_chain.detect{|x| x.method == :new_callback}

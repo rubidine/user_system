@@ -40,7 +40,7 @@ module UserSystem
   self.security_token_characters = ('A'..'Z').to_a +
                                    ('a'..'z').to_a +
                                    ('0'..'9').to_a +
-                                   ['-', '_', '.', '!', '~', '*', '(', ')']
+                                   ['-', '_', '.', '!', '~']
 
   mattr_accessor :minimum_security_token_length
   self.minimum_security_token_length = 30

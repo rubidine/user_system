@@ -64,7 +64,7 @@ context 'User' do
   end
 
   it 'should login regardless of login case given' do
-    assert User.login('CHESTer', 'test-test')
+    assert User.login(:login => 'CHESTer', :passphrase => 'test-test')
   end
 
   context 'With configuration email_is_login' do
@@ -79,7 +79,7 @@ context 'User' do
     end
 
     it 'should login with an email' do
-      assert User.login('chester@tatft.com', 'test-test')
+      assert User.login(:login => 'chester@tatft.com', :passphrase => 'test-test')
     end
   end
 
@@ -91,7 +91,7 @@ context 'User' do
 
     it 'should perform login without giving email adress' do
       create_user
-      assert User.login('chester', 'test-test')
+      assert User.login(:login => 'chester', :passphrase => 'test-test')
     end
 
     it 'cannot create an account without giving a login' do
