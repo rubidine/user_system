@@ -19,12 +19,10 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-module FixtureReplacement
-  attributes_for :user do |u|
-    u.login = 'chester'
-    u.nickname = 'Chester McTester'
-    u.email = 'chester@tatft.com'
-    u.passphrase = 'test-test'
-    u.passphrase_confirmation = 'test-test'
-  end
+Factory.define :user do |u|
+  u.login 'chester'
+  u.nickname 'Chester McTester'
+  u.email 'chester@tatft.com'
+  u.passphrase 'test-test'
+  u.passphrase_confirmation 'test-test'
 end

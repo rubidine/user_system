@@ -3,5 +3,6 @@ UserSystem
 
 Add all details of having user logins to your site.
 
-Requires view_extender: http://github.com/xtoddx/view_extender/tree/master
-         fixture_replacement: http://rubyforge.org/projects/replacefixtures
+Requires
+          view_extender: http://github.com/xtoddx/view_extender/tree/master
+(testing) factory_girl: http://github.com/thoughtbot/factory_girl/tree_master

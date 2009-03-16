@@ -40,7 +40,7 @@ context 'Sessions Controller' do
     @request = ActionController::TestRequest.new
     @response = ActionController::TestResponse.new
 
-    @user = create_user
+    @user = Factory(:user)
     @user.verify!
   end
 

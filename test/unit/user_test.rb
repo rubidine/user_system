@@ -23,21 +23,24 @@ require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
 
 context 'User' do
   setup do
-    @user = create_user
+    @user = Factory(:user)
   end
 
   it 'can be disabled' do
-    assert User.active.find(@user.id)
+    RAILS_DEFAULT_LOGGER.error 'XXXXXXX DISABLING A USER'
+    assert User.active.find_by_id(@user.id)
     @user.disable!
 
     assert @user.disabled?
     @user.reload
     assert @user.disabled?
-    assert User.disabled.find(@user.id)
+
+    assert User.disabled.find_by_id(@user.id)
   end
 
   it 'requires passphrase_confirmation to create account' do
-    atr = FixtureReplacementController::AttributeCollection.find_by_fixture_name(:user).hash
+    atr = Factory.attributes_for(:user)
+    atr.symbolize_keys!
     atr.delete(:passphrase_confirmation)
     atr[:login] = 'chester2'
     u = User.new(atr)
@@ -58,7 +61,7 @@ context 'User' do
   end
 
   it 'will not be valid if another user has the same login (case insensitive)' do
-    u = new_user(:email => 'email@another.com', :login => 'cHESTER')
+    u = Factory.build(:user, :email => 'email@another.com', :login => 'cHESTER')
     u.valid?
     assert u.errors.on(:login)
   end
@@ -73,7 +76,7 @@ context 'User' do
     end
 
     it 'should not create account without giving an email' do
-      user = new_user(:email => nil)
+      user = Factory.build(:user, :email => nil)
       user.valid?
       assert (user.errors.on(:email) || user.errors.on(:login))
     end
@@ -90,12 +93,12 @@ context 'User' do
     end
 
     it 'should perform login without giving email adress' do
-      create_user
+      Factory(:user)
       assert User.login(:login => 'chester', :passphrase => 'test-test')
     end
 
     it 'cannot create an account without giving a login' do
-      user = new_user(:login => nil)
+      user = Factory.build(:user, :login => nil)
       user.valid?
       assert user.errors.on(:login)
     end
@@ -106,7 +109,7 @@ context 'User' do
       end
 
       it 'cannot create an account without giving an email' do
-        user = new_user(:email => nil)
+        user = Factory.build(:user, :email => nil)
         user.valid?
         assert user.errors.on(:email)
       end
@@ -120,7 +123,7 @@ context 'User' do
       end
 
       it 'can create an account without giving an email' do
-        user = new_user(:email => nil)
+        user = Factory.build(:user, :email => nil)
         assert user.valid?
       end
 
