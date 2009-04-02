@@ -23,9 +23,5 @@ require File.join(File.dirname(__FILE__), '../../../../test/test_helper')
 require 'rubygems'
 require 'test/spec'
 
-module FixtureReplacement
-  @defaults_file = File.join(File.dirname(__FILE__), 'example_data.rb')
-end
-require 'fixture_replacement'
-
-Test::Unit::TestCase.send :include, FixtureReplacement
+require 'factory_girl'
+require 'test/factories'

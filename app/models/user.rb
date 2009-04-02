@@ -55,7 +55,8 @@ class User < ActiveRecord::Base
                 cond = merge_conditions({
                          'disabled_periods.disabled_item_type' => 'User'
                        })
-                now = Time.now
+                # This requires ActiveRecord stores in GMT (default)
+                now = Time.now.gmtime
                 {
                   :joins => [
                     "LEFT JOIN disabled_periods ON #{cond} " +
@@ -71,7 +72,7 @@ class User < ActiveRecord::Base
               }
   named_scope :active,
               lambda{
-                now = Time.now
+                now = Time.now.gmtime
                 cond = merge_conditions(
                          {'disabled_periods.disabled_item_type' => 'User'},
                          [

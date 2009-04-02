@@ -27,7 +27,7 @@ context 'Users Controller' do
     @request = ActionController::TestRequest.new
     @response = ActionController::TestResponse.new
 
-    @user = create_user(:verified => true)
+    @user = Factory(:user, :verified => true)
   end
 
   it 'should show the form with "new" action' do
@@ -73,7 +73,7 @@ context 'Users Controller' do
 
     it 'should allow creation if public account creation is turned on' do
       @user.destroy
-      post 'create', :user => atr = FixtureReplacementController::AttributeCollection.find_by_fixture_name(:user).hash
+      post 'create', :user => atr = Factory.attributes_for(:user)
       atr.symbolize_keys!
       assert User.login(:login => atr[:login], :passphrase => atr[:passphrase])
     end
@@ -87,7 +87,7 @@ context 'Users Controller' do
 
     it 'should not allow user creation' do
       @user.destroy
-      post 'create', :user => atr = FixtureReplacementController::AttributeCollection.find_by_fixture_name(:user).hash
+      post 'create', :user => atr = Factory.attributes_for(:user)
       assert_response 404
     end
 

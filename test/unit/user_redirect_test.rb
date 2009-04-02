@@ -11,7 +11,7 @@ context 'A class including UserRedirect' do
     @kls.request = ActionController::TestRequest.new
     @kls.response = ActionController::TestResponse.new
 
-    @user = create_user
+    @user = Factory(:user)
     @user.verified = true
     @user.reset_passphrase = false
   end
