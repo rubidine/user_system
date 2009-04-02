@@ -61,6 +61,5 @@ end
 # is reset, so use the hook we provide for you.
 #
 ActiveSupport::Dependencies.register_user_system_extension do
-  require_dependency 'application'
   ApplicationController.send :include, UserSystemLoginFilters
 end
