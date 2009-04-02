@@ -35,9 +35,9 @@ class User < ActiveRecord::Base
 
   validate :presence_of_email_if_required
   validates_presence_of :login, :passphrase
-  validates_uniqueness_of :login, :case_sensitive => false
-  validates_uniqueness_of :email, :allow_blank => true
-  validates_uniqueness_of :security_token, :allow_blank => true
+  validates_uniqueness_of :login, :case_sensitive => false, :identifier => 'unique_login'
+  validates_uniqueness_of :email, :allow_blank => true, :identifier => 'unique_email'
+  validates_uniqueness_of :security_token, :allow_blank => true, :identifier => 'unique_security_token'
   validates_length_of :passphrase, :minimum => 5
   validate_on_create :passphrase_confirmation_match
 
