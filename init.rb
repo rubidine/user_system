@@ -32,23 +32,6 @@ require File.join(directory, 'ext_lib', 'init.rb')
 
 require 'digest/md5'
 
-# define some routes
-ActionController::Routing::Routes.define_user_system_routes do |map|
-  map.resources :users,
-    :collection => {
-      :recover => :get,
-      :send_recovery => :post
-    },
-    :member => {
-      :request_verification => :get,
-      :verify => :get,
-      :perform_recovery => :get,
-      :inform_disabled => :get
-    }
-
-  map.resources :sessions
-end
-
 # Monkey patch into the core classes.
 #
 # There are two ways to do this, if you are patching into a core class
