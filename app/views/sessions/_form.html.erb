@@ -1,0 +1,28 @@
+<% form_for(:session, :url => sessions_url) do |f| %>
+  <table class="login-form">
+    <tbody>
+      <tr>
+        <th>
+          <%= f.label :login %>
+        </th>
+        <td>
+          <%= f.text_field :login %>
+        </td>
+      </tr>
+      
+      <tr>
+        <th>
+          <%= f.label :passphrase %>
+        </th>
+        <td>
+          <%= f.password_field :passphrase %>
+        </td>
+      </tr>
+
+      <tr>
+        <th>&nbsp;</th>
+        <td><%= submit_tag 'Login' %></td>
+      </tr>
+    </tbody>
+  </table>
+<% end %>
