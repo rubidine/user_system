@@ -36,11 +36,14 @@ module UserSystem
   mattr_accessor :site_name
   self.site_name = "My Rails Site"
 
+  mattr_accessor :root_url
+  self.root_url = "localhost"
+
   mattr_accessor :security_token_characters
   self.security_token_characters = ('A'..'Z').to_a +
                                    ('a'..'z').to_a +
                                    ('0'..'9').to_a +
-                                   ['-', '_', '.', '!', '~']
+                                   ['-', '_', '!', '~']
 
   mattr_accessor :minimum_security_token_length
   self.minimum_security_token_length = 30
