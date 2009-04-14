@@ -21,7 +21,7 @@
 
 require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
 
-context 'Users Controller' do
+context 'Users Controller', ActionController::TestCase do
   setup do
     @controller = UsersController.new
     @request = ActionController::TestRequest.new
@@ -53,7 +53,7 @@ context 'Users Controller' do
     assert_redirected_to recover_users_url, flash.inspect
   end
 
-  context 'With email verification turned on' do
+  context 'With email verification turned on', ActionController::TestCase do
     setup do
       UserSystem.verify_email = true
       @user.update_attribute :verified, false
@@ -66,7 +66,7 @@ context 'Users Controller' do
     end
   end
 
-  context 'With public account creation' do
+  context 'With public account creation', ActionController::TestCase do
     setup do
       UserSystem.public_account_creation = true
     end
@@ -80,7 +80,7 @@ context 'Users Controller' do
 
   end
 
-  context 'Without public account creation' do
+  context 'Without public account creation', ActionController::TestCase do
     setup do
       UserSystem.public_account_creation = false
     end

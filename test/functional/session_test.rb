@@ -34,7 +34,7 @@ def assert_not_logged_in
   assert_nil session[:user_id]
 end
 
-context 'Sessions Controller' do
+context 'Sessions Controller', ActionController::TestCase do
   setup do
     @controller = SessionsController.new
     @request = ActionController::TestRequest.new
@@ -67,7 +67,7 @@ context 'Sessions Controller' do
     assert_not_logged_in
   end
 
-  context 'If verify_emails is on' do
+  context 'If verify_emails is on', ActionController::TestCase do
     setup do
       UserSystem.verify_email = true
     end

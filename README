@@ -4,5 +4,17 @@ UserSystem
 Add all details of having user logins to your site.
 
 Requires
-          view_extender: http://github.com/xtoddx/view_extender/tree/master
-(testing) factory_girl: http://github.com/thoughtbot/factory_girl/tree_master
+--------
+view_extender: http://github.com/xtoddx/view_extender/tree/master
+
+Testing
+-------
+Be sure you add the required gems to config/environments/test.rb
+
+  config.gem "thoughtbot-factory_girl",
+             :lib    => "factory_girl",
+             :source => "http://gems.github.com"
+
+  config.gem 'mocha'
+
+  config.gem 'test_spec', :lib => 'test/spec'

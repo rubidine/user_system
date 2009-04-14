@@ -20,8 +20,4 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require File.join(File.dirname(__FILE__), '../../../../test/test_helper')
-require 'rubygems'
-require 'test/spec'
-
-require 'factory_girl'
-require 'test/factories'
+require File.join(File.dirname(__FILE__), 'factories')

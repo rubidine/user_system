@@ -21,7 +21,7 @@
 
 require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
 
-context 'User' do
+context 'User', ActiveSupport::TestCase do
   setup do
     @user = Factory(:user)
   end
@@ -70,7 +70,7 @@ context 'User' do
     assert User.login(:login => 'CHESTer', :passphrase => 'test-test')
   end
 
-  context 'With configuration email_is_login' do
+  context 'With configuration email_is_login', ActiveSupport::TestCase do
     setup do
       UserSystem.email_is_login = true
     end
@@ -86,7 +86,7 @@ context 'User' do
     end
   end
 
-  context 'Without configuration email_is_login' do
+  context 'Without configuration email_is_login', ActiveSupport::TestCase do
     setup do
       User.delete_all
       UserSystem.email_is_login = false
@@ -103,7 +103,7 @@ context 'User' do
       assert user.errors.on(:login)
     end
 
-    context 'With configuration verify email' do
+    context 'With configuration verify email', ActiveSupport::TestCase do
       setup do
         UserSystem.verify_email = true
       end
@@ -116,7 +116,7 @@ context 'User' do
 
     end
 
-    context 'Without configuration verify email' do
+    context 'Without configuration verify email', ActiveSupport::TestCase do
       setup do
         User.delete_all
         UserSystem.verify_email = false
@@ -130,7 +130,7 @@ context 'User' do
     end
   end
 
-  context 'With configuration verify_email' do
+  context 'With configuration verify_email', ActiveSupport::TestCase do
     setup do
       UserSystem.verify_email = true
     end

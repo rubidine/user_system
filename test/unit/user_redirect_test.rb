@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
 
-context 'A class including UserRedirect' do
+context 'A class including UserRedirect', ActiveSupport::TestCase do
   setup do
     class M < ActionController::Base
       include UserRedirect
@@ -30,7 +30,7 @@ context 'A class including UserRedirect' do
     @kls.expects(:inform_disabled).never
   end
 
-  context 'that has more callbacks added after included once' do
+  context 'that has more callbacks added after included once', ActiveSupport::TestCase do
     setup do
       module Ext
         def new_callback

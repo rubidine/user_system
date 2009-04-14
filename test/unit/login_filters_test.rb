@@ -21,7 +21,7 @@
 
 require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
 
-context 'The Login Filter' do
+context 'The Login Filter', ActiveSupport::TestCase do
   setup do
     class M < ActionController::Base
       include UserSystemLoginFilters
@@ -54,7 +54,7 @@ context 'The Login Filter' do
     @kls.send(:require_login)
   end
 
-  context 'When email validation is turned on' do
+  context 'When email validation is turned on', ActiveSupport::TestCase do
     setup do
       UserSystem.verify_email = true
     end
@@ -71,7 +71,7 @@ context 'The Login Filter' do
 
 end
 
-context 'A class incliding the login filters' do
+context 'A class incliding the login filters', ActiveSupport::TestCase do
   setup do
     class Kls < ActionController::Base ; include UserSystemLoginFilters ; end
     @kls = Kls
