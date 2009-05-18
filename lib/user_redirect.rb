@@ -102,7 +102,7 @@ module UserRedirect
   end
 
   def go_back
-    if session[:last_params]
+    if !UserSystem.dont_use_session && session[:last_params]
       redirect_to session[:last_params]
     end
   end

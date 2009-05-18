@@ -32,8 +32,14 @@ module UserSystemLoginFilters
   # So any controller can call current_user to get the logged in user
   #
   def current_user
-    return nil unless session[:user_id]
-    @usys_logged_in_user ||= User.find_by_id(session[:user_id])
+    @usys_logged_in_user ||= lookup_user
+  end
+
+  #
+  # This is the fallback case.  It can be alias-chained by other plugins.
+  #
+  def lookup_user
+    UserSystem.dont_use_session ? nil : User.find_by_id(session[:user_id])
   end
 
   #
@@ -42,7 +48,7 @@ module UserSystemLoginFilters
   #
   def require_login
     unless current_user
-      session[:last_params] = params
+      session[:last_params] = params unless UserSystem.dont_use_session
       redirect_to new_session_url
       return
     end
@@ -57,8 +63,9 @@ module UserSystemLoginFilters
     if !current_user or (!valid_users.empty? and !valid_users.include?(current_user))
       # TODO: if current_user, but not valid, use 403, otherwise 401
       session[:last_params] = params
-      # XXX messages should be l10n'd and configurable
-      flash[:notice] = 'You need to login to proceed.'
+      unless UserSystem.dont_use_session
+        flash[:notice] = 'You need to login to proceed.'
+      end
       redirect_to new_session_url
       return
     end
@@ -92,8 +99,8 @@ module UserSystemLoginFilters
     def only_for_user *users
       options = users.last.is_a?(Hash) ? users.pop : {}
       _users = users.collect{|x| userify(x) }
-      before_filter(options) do
-        require_user_login(*_users)
+      before_filter(options) do |inst|
+        inst.send :require_user_login, *_users
       end
     end
 

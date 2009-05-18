@@ -39,6 +39,9 @@ module UserSystem
   mattr_accessor :root_url
   self.root_url = "localhost"
 
+  mattr_accessor :dont_use_session
+  self.dont_use_session = false
+
   mattr_accessor :security_token_characters
   self.security_token_characters = ('A'..'Z').to_a +
                                    ('a'..'z').to_a +
