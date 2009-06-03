@@ -21,16 +21,20 @@
 
 ActionController::Routing::Routes.draw do |map|
   map.resources :users,
-    :collection => {
-      :recover => :get,
-      :send_recovery => :post
-    },
-    :member => {
-      :request_verification => :get,
-      :verify => :get,
-      :perform_recovery => :get,
-      :inform_disabled => :get
-    }
+                :collection => {
+                  :recover => :get,
+                  :send_recovery => :post
+                },
+                :member => {
+                  :request_verification => :get,
+                  :verify => :get,
+                  :perform_recovery => :get,
+                  :inform_disabled => :get
+                }
 
-  map.resources :sessions
+  map.resources :sessions,
+                :collection => {
+                  :end => :get # for non-resourceful access to logout
+                }
 end
+

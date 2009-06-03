@@ -42,6 +42,7 @@ class SessionsController < ApplicationController
     flash.now[:notice] = "You are now logged out"
     redirect_to :action => 'new'
   end
+  alias :end :destroy
 
   private
   def perform_user_login
