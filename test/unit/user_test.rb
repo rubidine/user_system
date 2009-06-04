@@ -122,11 +122,32 @@ context 'User', ActiveSupport::TestCase do
         UserSystem.verify_email = false
       end
 
-      it 'can create an account without giving an email' do
-        user = Factory.build(:user, :email => nil)
-        assert user.valid?
+      context 'With configuration require email', ActiveSupport::TestCase do
+
+        setup do
+          UserSystem.require_email = true
+        end
+
+        it 'can not create an account without giving an email' do
+          user = Factory.build(:user, :email => nil)
+          user.valid?
+          assert user.errors.on(:email)
+        end
+
       end
 
+      context 'Without configuration require email', ActiveSupport::TestCase do
+
+        setup do
+          UserSystem.require_email = false
+        end
+
+        it 'can create an account without giving an email' do
+          user = Factory.build(:user, :email => nil)
+          assert user.valid?
+        end
+
+      end
     end
   end
 

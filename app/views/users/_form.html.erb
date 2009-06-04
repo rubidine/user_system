@@ -37,7 +37,7 @@
               <%= f.label :passphrase %>
             </th>
             <td>
-              <%= f.password_field :passphrase %>
+              <%= f.password_field :passphrase, :value => (params[:user] ? params[:user][:passphrase] : nil) %>
             </td>
           </tr>
 
@@ -46,7 +46,7 @@
               <%= f.label :passphrase_confirmation %>
             </th>
             <td>
-              <%= f.password_field :passphrase_confirmation %>
+              <%= f.password_field :passphrase_confirmation, :value => '' %>
             </td>
           </tr>
 

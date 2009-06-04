@@ -30,6 +30,9 @@ module UserSystem
   mattr_accessor :verify_email
   self.verify_email = false
 
+  mattr_accessor :require_email
+  self.require_email = false
+
   mattr_accessor :user_messenger_from
   self.user_messenger_from = "nobody@localhost"
 
@@ -53,22 +56,5 @@ module UserSystem
 
   mattr_accessor :maximum_security_token_length
   self.maximum_security_token_length = 50
-
-=begin
-  attr_accessor :invite_only
-  self.invite_only = false
-
-  attr_accessor :administrators_group
-  self.administrators_group = "Administrators"
-
-  attr_accessor :default_new_user_groups
-  self.default_new_user_groups = ["Users"]
-
-  attr_accessor :public_group_creation
-  self.public_group_creation = false
-
-  attr_accessor :group_creation_moderated
-  self.group_creation_moderated = false
-=end
 
 end

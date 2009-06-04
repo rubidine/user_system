@@ -33,7 +33,7 @@ class User < ActiveRecord::Base
   before_create :set_security_token_if_verification_needed
   before_save :set_lowercase_login
 
-  validate :presence_of_email_if_required
+  validate :presence_of_email_if_required_or_explicitly_validated
   validates_presence_of :login
   validates_presence_of :passphrase, :identifier => 'present_passphrase'
   validates_uniqueness_of :login, :case_sensitive => false, :identifier => 'unique_login'
@@ -134,7 +134,7 @@ class User < ActiveRecord::Base
     return if UserSystem.email_is_login
 
     # don't allow it to be re-set
-    if new_record? or login.nil? or (dc=new_login.downcase) == login.downcase
+    if new_record? or login.blank? or new_login.downcase == login.downcase
       write_attribute(:login, new_login)
     end
   end
@@ -144,6 +144,7 @@ class User < ActiveRecord::Base
   # Passwords are hased, so compute the hash when assigning it.
   #
   def passphrase= new_passphrase
+    return if new_passphrase.blank?
     write_attribute(:passphrase, pw_hash(new_passphrase))
   end
 
@@ -253,8 +254,8 @@ class User < ActiveRecord::Base
     end
   end
 
-  def presence_of_email_if_required
-    if UserSystem.verify_email
+  def presence_of_email_if_required_or_explicitly_validated
+    if UserSystem.verify_email or UserSystem.require_email
       errors.add_on_blank :email, "should not be blank"
     end
   end
