@@ -108,7 +108,7 @@ module UserRedirect
   end
 
   def default
-    redirect_to '/'
+    redirect_to root_path
   end
 
 end
