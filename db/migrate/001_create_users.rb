@@ -21,7 +21,7 @@
 
 class CreateUsers < ActiveRecord::Migration
   def self.up
-    create_table :users do |t|
+    create_table User.table_name do |t|
       # basic census information
       t.string :login, :nickname, :email, :lowercase_login
       t.datetime :last_login
@@ -39,6 +39,6 @@ class CreateUsers < ActiveRecord::Migration
   end
 
   def self.down
-    drop_table :users
+    drop_table User.table_name
   end
 end

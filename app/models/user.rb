@@ -61,7 +61,7 @@ class User < ActiveRecord::Base
                 {
                   :joins => [
                     "LEFT JOIN disabled_periods ON #{cond} " +
-                    "AND disabled_periods.disabled_item_id = users.id"
+                    "AND disabled_periods.disabled_item_id = #{self.class.table_name}.id"
                   ],
                   :conditions => [
                     'disabled_periods.disabled_from <= ? ' +
@@ -86,7 +86,7 @@ class User < ActiveRecord::Base
                 {
                   :joins => [
                     "LEFT JOIN disabled_periods ON #{cond} " +
-                    "AND disabled_periods.disabled_item_id = users.id"
+                    "AND disabled_periods.disabled_item_id = #{self.class.table_name}.id"
                   ],
                   :conditions => {'disabled_periods.id' => nil}
                 }
@@ -177,11 +177,15 @@ class User < ActiveRecord::Base
   # Will return a user instance or nil.
   #
   def self.login options
+    options.symbolize_keys!
     passphrase = options[:passphrase]
-    login = options[:login]
+    login = options[:login].downcase
     scope = options[:scope] || self
 
-    u = scope.find(:first, :conditions => {:lowercase_login =>login.downcase})
+    u = scope.find(
+          :first,
+          :conditions => {User.table_name => {:lowercase_login =>login}}
+        )
     if (u and (u.passphrase == pw_hash(passphrase)))
       u.update_attribute :last_login, Time.now
       u
