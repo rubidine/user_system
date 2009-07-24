@@ -1,7 +1,9 @@
 <%= render 'form' %>
 
 <ul class="user-login-links">
-  <li> <%= link_to 'Signup', new_user_url %> </li>
+  <% if UserSystem.public_account_creation -%>
+    <li> <%= link_to 'Signup', new_user_url %> </li>
+  <% end -%>
   <li> <%= link_to 'Recover lost password', recover_users_url %> </li>
 </ul>
 <%#
