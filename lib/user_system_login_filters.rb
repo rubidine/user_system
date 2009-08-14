@@ -48,7 +48,10 @@ module UserSystemLoginFilters
   #
   def require_login
     unless current_user
-      session[:last_params] = params unless UserSystem.dont_use_session
+      unless UserSystem.dont_use_session
+        puts "STORING LAST PARAMS: #{UserSystem.dont_use_session}"
+        session[:last_params] = params
+      end
       redirect_to new_session_url
       return
     end
@@ -62,8 +65,9 @@ module UserSystemLoginFilters
   def require_user_login *valid_users
     if !current_user or (!valid_users.empty? and !valid_users.include?(current_user))
       # TODO: if current_user, but not valid, use 403, otherwise 401
-      session[:last_params] = params
       unless UserSystem.dont_use_session
+        puts "STORING PARAMS(2): #{UserSystem.dont_use_sesion}"
+        session[:last_params] = params
         flash[:notice] = 'You need to login to proceed.'
       end
       redirect_to new_session_url

@@ -39,7 +39,6 @@ class SessionsController < ApplicationController
 
   def destroy
     session[:user_id] = nil
-    flash.now[:notice] = "You are now logged out"
     redirect_to :action => 'new'
   end
   alias :end :destroy
@@ -51,5 +50,18 @@ class SessionsController < ApplicationController
 
   def login_scope
     User
+  end
+
+  # Redefine this to keep it from the session
+  def flash
+    unless defined? @_flash
+      if UserSystem.dont_use_session
+        @_flash = ActionController::Flash::FlashHash.new
+      else
+        @_flash = session[:flash] ||= ActionController::Flash::FlashHash.new
+      end
+      @_flash.sweep
+    end
+    @_flash
   end
 end
