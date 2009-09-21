@@ -39,7 +39,9 @@ module UserSystemLoginFilters
   # This is the fallback case.  It can be alias-chained by other plugins.
   #
   def lookup_user
-    UserSystem.dont_use_session ? nil : User.find_by_id(session[:user_id])
+    UserSystem.dont_use_session ? \
+      nil : \
+      self.class.user_model_for_this_controller.find_by_id(session[:user_id])
   end
 
   #
@@ -49,10 +51,9 @@ module UserSystemLoginFilters
   def require_login
     unless current_user
       unless UserSystem.dont_use_session
-        puts "STORING LAST PARAMS: #{UserSystem.dont_use_session}"
         session[:last_params] = params
       end
-      redirect_to new_session_url
+      redirect_to login_url_for_this_controller
       return
     end
 
@@ -66,11 +67,10 @@ module UserSystemLoginFilters
     if !current_user or (!valid_users.empty? and !valid_users.include?(current_user))
       # TODO: if current_user, but not valid, use 403, otherwise 401
       unless UserSystem.dont_use_session
-        puts "STORING PARAMS(2): #{UserSystem.dont_use_sesion}"
         session[:last_params] = params
         flash[:notice] = 'You need to login to proceed.'
       end
-      redirect_to new_session_url
+      redirect_to login_url_for_this_controller
       return
     end
 
@@ -93,6 +93,24 @@ module UserSystemLoginFilters
     end
 
     true
+  end
+
+  def login_url_for_this_controller
+    rv = self.class.read_inheritable_attribute(:login_url)
+    if h=self.class.read_inheritable_attribute(:login_url_helper)
+      rv = self.send(h)
+    end
+    rv ||= new_session_url
+    rv
+  end
+
+  def login_post_url_for_this_controller
+    rv = self.class.read_inheritable_attribute(:login_post_url)
+    if h=self.class.read_inheritable_attribute(:login_post_url_helper)
+      rv = self.send(h)
+    end
+    rv ||= sessions_url
+    rv
   end
 
   module ClassMethods
@@ -121,7 +139,12 @@ module UserSystemLoginFilters
 
     # internal helper
     def userify(str_or_user)
-      to_model(str_or_user, User, :find_by_name)
+      to_model(str_or_user, user_model_for_this_controller, :find_by_name)
+    end
+
+    def user_model_for_this_controller
+      atr = read_inheritable_attribute(:user_model)
+      atr ? atr.to_s.camelize.constantize : User
     end
   end
 

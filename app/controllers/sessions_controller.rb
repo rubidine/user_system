@@ -45,11 +45,11 @@ class SessionsController < ApplicationController
 
   private
   def perform_user_login
-    User.login(params[:session].merge(:scope => login_scope))
+    self.class.send(:user_model_for_this_controller).login(params[:session].merge(:scope => login_scope))
   end
 
   def login_scope
-    User
+    self.class.send(:user_model_for_this_controller)
   end
 
   # Redefine this to keep it from the session
