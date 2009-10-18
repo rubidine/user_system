@@ -41,7 +41,9 @@ module UserSystemLoginFilters
   def lookup_user
     UserSystem.dont_use_session ? \
       nil : \
-      self.class.user_model_for_this_controller.find_by_id(session[:user_id])
+      self.class.send(:user_model_for_this_controller).find_by_id(
+        session[:user_id]
+      )
   end
 
   #
