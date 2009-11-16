@@ -30,7 +30,7 @@ module UserRedirect
 
   private
 
-  @@callback_names = [:verify_email, :inform_disabled, :reset_passphrase]
+  @@callback_names = [:verify_email, :inform_disabled]
   mattr_accessor :callback_names
 
   @@included_in = []
@@ -95,15 +95,10 @@ module UserRedirect
     end
   end
 
-  def reset_passphrase user_record
-    if user_record.reset_passphrase?
-      redirect_to edit_user_path(user_record)
-    end
-  end
-
   def go_back
-    if !UserSystem.dont_use_session && session[:last_params]
+    if session[:last_params]
       redirect_to session[:last_params]
+      session[:last_params] = nil
     end
   end
 

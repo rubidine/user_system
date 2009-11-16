@@ -39,11 +39,9 @@ module UserSystemLoginFilters
   # This is the fallback case.  It can be alias-chained by other plugins.
   #
   def lookup_user
-    UserSystem.dont_use_session ? \
-      nil : \
-      self.class.send(:user_model_for_this_controller).find_by_id(
-        session[:user_id]
-      )
+    self.class.send(:session_model_for_this_controller).find_by_id(
+      session[:session_id]
+    ).try(:user)
   end
 
   #
@@ -52,9 +50,7 @@ module UserSystemLoginFilters
   #
   def require_login
     unless current_user
-      unless UserSystem.dont_use_session
-        session[:last_params] = params
-      end
+      session[:last_params] = params
       redirect_to login_url_for_this_controller
       return
     end
@@ -68,10 +64,8 @@ module UserSystemLoginFilters
   def require_user_login *valid_users
     if !current_user or (!valid_users.empty? and !valid_users.include?(current_user))
       # TODO: if current_user, but not valid, use 403, otherwise 401
-      unless UserSystem.dont_use_session
-        session[:last_params] = params
-        flash[:notice] = 'You need to login to proceed.'
-      end
+      session[:last_params] = params
+      flash[:notice] = 'You need to login to proceed.'
       redirect_to login_url_for_this_controller
       return
     end
@@ -142,6 +136,14 @@ module UserSystemLoginFilters
     # internal helper
     def userify(str_or_user)
       to_model(str_or_user, user_model_for_this_controller, :find_by_name)
+    end
+
+    def auth_module_for_this_controller
+      read_inheritable_attribute(:auth_module)
+    end
+
+    def session_model_for_this_controller
+      read_inheritable_attribute(:session_model) || Session
     end
 
     def user_model_for_this_controller

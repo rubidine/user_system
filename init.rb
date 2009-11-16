@@ -30,7 +30,7 @@ end
 # Load the extension mojo that hacks into the rails base classes.
 require File.join(directory, 'ext_lib', 'init.rb')
 
-require 'digest/md5'
+# require 'digest/md5'
 
 # Monkey patch into the core classes.
 #

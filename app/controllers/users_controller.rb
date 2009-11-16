@@ -117,16 +117,14 @@ class UsersController < ApplicationController
     unless @user
       respond_to do |format|
         format.html do
-          unless UserSystem.dont_use_session
-            flash[:error] = "Unable to find email address #{@user.email}"
-          end
+          flash[:error] = "Unable to find email address #{@user.email}"
           render :action => 'recover'
         end
       end
       return
     end
     @user.update_security_token! 20.minutes
-    @user.update_attribute :reset_passphrase, true
+#    @user.update_attribute :reset_passphrase, true
     UserMessenger.deliver_recovery(@user)
 
     respond_to :html
@@ -147,9 +145,7 @@ class UsersController < ApplicationController
           user_redirect(user)
           session[:user_id] = user.id
         else
-          unless UserSystem.dont_use_session
-            flash[:notice] = 'Invalid or expired token'
-          end
+          flash[:notice] = 'Invalid or expired token'
           redirect_to recover_users_path
         end
       end
@@ -170,18 +166,5 @@ class UsersController < ApplicationController
     if params[:id].nil? or params[:id].empty?
       raise ActiveRecord::RecordNotFound      
     end
-  end
-
-  # Redefine this to keep it from the session
-  def flash
-    unless defined? @_flash
-      if UserSystem.dont_use_session
-        @_flash = ActionController::Flash::FlashHash.new
-      else
-        @_flash = session[:flash] ||= ActionController::Flash::FlashHash.new
-      end
-      @_flash.sweep
-    end
-    @_flash
   end
 end

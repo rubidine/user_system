@@ -21,9 +21,11 @@
 
 #
 # A user is the identity of someone who has access to the site.
+# It is not an authentication mechanism.
 #
 class User < ActiveRecord::Base
 
+  has_many :sessions
   has_many :disabled_periods, :as => :disabled_item
   belongs_to :current_disabled_period,
              :foreign_key => :disabled_period_id,
@@ -35,17 +37,70 @@ class User < ActiveRecord::Base
 
   validate :presence_of_email_if_required_or_explicitly_validated
   validates_presence_of :login
-  validates_presence_of :passphrase, :identifier => 'present_passphrase'
   validates_uniqueness_of :login, :case_sensitive => false, :identifier => 'unique_login'
   validates_uniqueness_of :email, :allow_blank => true, :identifier => 'unique_email'
   validates_uniqueness_of :security_token, :allow_blank => true, :identifier => 'unique_security_token'
-  validates_length_of :passphrase, :minimum => 5
-  validate_on_create :passphrase_confirmation_match
 
-  attr_reader :error_message, :passphrase_confirmation
+#  validates_length_of :passphrase, :minimum => 5
+#  validate_on_create :passphrase_confirmation_match
+#  validates_presence_of :passphrase, :identifier => 'present_passphrase'
+#  attr_reader :passphrase_confirmation
+#  attr_protected :reset_passphrase
+  ##
+  #
+  # Passwords are hased, so compute the hash when assigning it.
+  #
+#  def passphrase= new_passphrase
+#    return if new_passphrase.blank?
+#    write_attribute(:passphrase, pw_hash(new_passphrase))
+#  end
+  ##
+  #
+  # Passwords are hased, so compute the hash when assigning it.
+  #
+#  def passphrase_confirmation= new_passphrase
+#    @passphrase_confirmation = pw_hash(new_passphrase)
+#  end
+  ##
+  #
+  # Login with the given login and passphrase.
+  # Will return a user instance or nil.
+  #
+#  def self.login options
+#    options.symbolize_keys!
+#    passphrase = options[:passphrase]
+#    login = options[:login].downcase
+#    scope = options[:scope] || self
+#
+#    u = scope.find(
+#          :first,
+#          :conditions => {User.table_name => {:lowercase_login =>login}}
+#        )
+#    if (u and (u.passphrase == pw_hash(passphrase)))
+#      u.update_attribute :last_login, Time.now
+#      u
+#    else
+#      nil
+#    end
+#  end
+#  def pw_hash str
+#    self.class.pw_hash(str)
+#  end
+#  def self.pw_hash str
+#    Digest::MD5.hexdigest(str)
+#  end
+#  def passphrase_confirmation_match
+#    unless @passphrase_confirmation == passphrase
+#      errors.add(:passphrase, 'does not match confirmation')
+#    end
+#  end
+
+
+
+  attr_reader :error_message
 
   attr_protected :security_token, :security_token_created_at
-  attr_protected :verified, :reset_passphrase, :disabled_from, :disabled_until
+  attr_protected :verified, :disabled_from, :disabled_until
 
   named_scope :verified, {:conditions => {:verified => true}}
   named_scope :unverified, {:conditions => {:verified => false}}
@@ -141,15 +196,6 @@ class User < ActiveRecord::Base
 
   ##
   #
-  # Passwords are hased, so compute the hash when assigning it.
-  #
-  def passphrase= new_passphrase
-    return if new_passphrase.blank?
-    write_attribute(:passphrase, pw_hash(new_passphrase))
-  end
-
-  ##
-  #
   # Email can also act as the login name of the user based on configuration
   #
   # Changing the email when verification is on will mark the record as
@@ -163,36 +209,6 @@ class User < ActiveRecord::Base
     write_attribute :verified, false if UserSystem.verify_email and !new_record?
   end
 
-  ##
-  #
-  # Passwords are hased, so compute the hash when assigning it.
-  #
-  def passphrase_confirmation= new_passphrase
-    @passphrase_confirmation = pw_hash(new_passphrase)
-  end
-
-  ##
-  #
-  # Login with the given login and passphrase.
-  # Will return a user instance or nil.
-  #
-  def self.login options
-    options.symbolize_keys!
-    passphrase = options[:passphrase]
-    login = options[:login].downcase
-    scope = options[:scope] || self
-
-    u = scope.find(
-          :first,
-          :conditions => {User.table_name => {:lowercase_login =>login}}
-        )
-    if (u and (u.passphrase == pw_hash(passphrase)))
-      u.update_attribute :last_login, Time.now
-      u
-    else
-      nil
-    end
-  end
 
   ##
   #
@@ -244,19 +260,6 @@ class User < ActiveRecord::Base
   end
 
   private
-  def pw_hash str
-    self.class.pw_hash(str)
-  end
-
-  def self.pw_hash str
-    Digest::MD5.hexdigest(str)
-  end
-
-  def passphrase_confirmation_match
-    unless @passphrase_confirmation == passphrase
-      errors.add(:passphrase, 'does not match confirmation')
-    end
-  end
 
   def presence_of_email_if_required_or_explicitly_validated
     if UserSystem.verify_email or UserSystem.require_email

@@ -1,7 +1,12 @@
 UserSystem
 ==========
 
-Add all details of having user logins to your site.
+A framework for user interactions.  There is a User model that handles
+all the knowledge about a user (login, email, verification status, etc)
+and a Session model that is stored in the session to associate a user
+with access to the site.
+
+Authentication is layered on top by other plugins.
 
 Requires
 --------

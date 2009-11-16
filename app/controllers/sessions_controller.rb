@@ -21,14 +21,15 @@
 
 class SessionsController < ApplicationController
 
-  filter_parameter_logging :passphrase
+#  filter_parameter_logging :passphrase
   skip_before_filter :require_login
   include UserRedirect
 
   def create
-    if u = perform_user_login
-      session[:user_id] = u.id
-      user_redirect(u)
+    if s = create_session
+      session[:session_id] = s.id
+      session[:user_id] = s.user_id
+      user_redirect(s.user)
     else
       flash.now[:error] = "Unable to login. " +
                       "Ensure your login name and passphrase are correct.  " +
@@ -38,30 +39,18 @@ class SessionsController < ApplicationController
   end
 
   def destroy
+    session[:session_id] = nil
     session[:user_id] = nil
     redirect_to :action => 'new'
   end
   alias :end :destroy
 
   private
-  def perform_user_login
-    self.class.send(:user_model_for_this_controller).login(params[:session].merge(:scope => login_scope))
+  def create_session
+    self.class.send(:auth_module_for_this_controller).login(params[:session].merge(:scope => login_scope))
   end
 
   def login_scope
     self.class.send(:user_model_for_this_controller)
-  end
-
-  # Redefine this to keep it from the session
-  def flash
-    unless defined? @_flash
-      if UserSystem.dont_use_session
-        @_flash = ActionController::Flash::FlashHash.new
-      else
-        @_flash = session[:flash] ||= ActionController::Flash::FlashHash.new
-      end
-      @_flash.sweep
-    end
-    @_flash
   end
 end
