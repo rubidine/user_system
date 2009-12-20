@@ -21,8 +21,15 @@
 
 class SessionsController < ApplicationController
 
-#  filter_parameter_logging :passphrase
   skip_before_filter :require_login
+
+  # DEFAULT CONFIGURATION
+  #   self.auth_module = PasswordAuthentication
+  #   self.session_model = Session
+  #   self.user_model = User
+  #   self.login_url = nil
+  #   self.login_url_helper = :sessions_url
+  include UserAuthentication
   include UserRedirect
 
   def create
@@ -45,12 +52,4 @@ class SessionsController < ApplicationController
   end
   alias :end :destroy
 
-  private
-  def create_session
-    self.class.send(:auth_module_for_this_controller).login(params[:session].merge(:scope => login_scope))
-  end
-
-  def login_scope
-    self.class.send(:user_model_for_this_controller)
-  end
 end

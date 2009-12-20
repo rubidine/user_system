@@ -20,17 +20,29 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # UserRedirect handles redirecting users upon login, account creation, and
-# other points in the application when performing actions on the user.
+# other points in the application when performing actions on the user.  It is
+# only useful when included in a controller.  It expects redirect_to to be
+# a method to be called if a callback redirects (and hide_action to keep
+# callbacks from showing up as actions).
 #
 # It needs to be extensible so other methods can hook into it.  To this end it
 # uses ActiveSupport::Callbacks.  To add a new callback use
+#   module MyModuleWithMyCallback
+#     def my_method user_record
+#       # check a condition, maybe redirect
+#       # return non-false to pass on to later callbacks
+#     end
+#   end
 #   UserRedirect.on_redirection :my_method
 #   UserRedirect.send :include, MyModuleWithMyCallback
+
+# see UserEmailVerificationRedirect for an example
+#
 module UserRedirect
 
   private
 
-  @@callback_names = [:verify_email, :inform_disabled]
+  @@callback_names = []
   mattr_accessor :callback_names
 
   @@included_in = []
@@ -39,14 +51,18 @@ module UserRedirect
   @@inclusive = []
   mattr_accessor :inclusive
 
-  # remember the callback for when we are included in something later on
-  # add the callback to everything we are already included in
+  # This way a callback gets added to us (and everything we will be included
+  # in later) and to the things we were mixed into before we got the new
+  # methods.
   def self.on_redirection symbol
     callback_names << symbol
     included_in.each{|x| x.on_redirection(symbol)}
   end
 
-  # add the callbacks into the class
+  # When a class includes this module, we need to remember the class so we can
+  # add methods that are added to us later on back into it.
+  # Every module we have included, the class including us should include as well
+  # so it can have all the methods and any self.included hooks can run.
   def self.included kls
 
     # remember this in case other callbacks come online later
@@ -56,16 +72,19 @@ module UserRedirect
     inclusive.each{|m| kls.send :include, m}
 
     # introduce callback mojo
+    # the callbacks are built per including controller
+    # so one controller may include some others don't
+    # but each controller get everything mixed directly into UserRedirect
     kls.send :include, ActiveSupport::Callbacks
     kls.send :define_callbacks, :on_redirection
     kls.send :hide_action, :callback_names, :callback_names=,
                            :included_in, :included_in=,
                            :run_callbacks
-
-    # include all the callbacks that are already defined
     callback_names.each{|x| kls.on_redirection(x)}
   end
 
+  # When we include something, we remember it so we can include it into
+  # everything else later on, and we inlcude it in anything we're already in.
   def self.include mod
     super
     included_in.each{|c| c.send(:include, mod)}
@@ -80,21 +99,10 @@ module UserRedirect
       break if performed?
     end
     go_back unless performed?
-    default unless performed?
+    go_to_default unless performed?
   end
 
-  def verify_email user_record
-    if UserSystem.verify_email and !user_record.verified
-      redirect_to request_verification_user_path(user_record)
-    end
-  end
-
-  def inform_disabled user_record
-    if user_record.disabled?
-      redirect_to inform_disabled_user_path(user_record)
-    end
-  end
-
+  # Redirect back to stored location, if any
   def go_back
     if session[:last_params]
       redirect_to session[:last_params]
@@ -102,8 +110,28 @@ module UserRedirect
     end
   end
 
-  def default
-    redirect_to root_path
+  # Go to a configurable default, or just root_path
+  def go_to_default
+    if p = UserSystem.default_path
+      v = p.is_a?(Symbol) ? send(p) : p
+      redirect_to(v)
+    else
+      redirect_to root_path
+    end
   end
 
 end
+
+##
+# A module to check email verification that is mixed into UserRedirect
+#
+module UserEmailVerificationRedirect
+  def verify_email user_record
+    if UserSystem.verify_email and !user_record.verified
+      redirect_to request_verification_user_path(user_record)
+    end
+  end
+end
+
+UserRedirect.on_redirection :verify_email
+UserRedirect.include UserEmailVerificationRedirect

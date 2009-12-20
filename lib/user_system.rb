@@ -33,6 +33,9 @@ module UserSystem
   mattr_accessor :require_email
   self.require_email = false
 
+  mattr_accessor :always_generate_security_token
+  self.always_generate_security_token = false
+
   mattr_accessor :user_messenger_from
   self.user_messenger_from = "nobody@localhost"
 
@@ -42,8 +45,8 @@ module UserSystem
   mattr_accessor :root_url
   self.root_url = "localhost"
 
-  mattr_accessor :dont_use_session
-  self.dont_use_session = false
+  mattr_accessor :default_path
+  self.default_path = nil # '/dashboards' || :dashboards_path
 
   mattr_accessor :security_token_characters
   self.security_token_characters = ('A'..'Z').to_a +

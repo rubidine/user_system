@@ -26,75 +26,22 @@
 class User < ActiveRecord::Base
 
   has_many :sessions
-  has_many :disabled_periods, :as => :disabled_item
-  belongs_to :current_disabled_period,
-             :foreign_key => :disabled_period_id,
-             :class_name => 'DisabledPeriod'
 
   before_create :mark_as_verified_if_email_verification_not_required
-  before_create :set_security_token_if_verification_needed
+  before_create :set_security_token_if_needed
   before_save :set_lowercase_login
 
   validate :presence_of_email_if_required_or_explicitly_validated
   validates_presence_of :login
-  validates_uniqueness_of :login, :case_sensitive => false, :identifier => 'unique_login'
-  validates_uniqueness_of :email, :allow_blank => true, :identifier => 'unique_email'
-  validates_uniqueness_of :security_token, :allow_blank => true, :identifier => 'unique_security_token'
-
-#  validates_length_of :passphrase, :minimum => 5
-#  validate_on_create :passphrase_confirmation_match
-#  validates_presence_of :passphrase, :identifier => 'present_passphrase'
-#  attr_reader :passphrase_confirmation
-#  attr_protected :reset_passphrase
-  ##
-  #
-  # Passwords are hased, so compute the hash when assigning it.
-  #
-#  def passphrase= new_passphrase
-#    return if new_passphrase.blank?
-#    write_attribute(:passphrase, pw_hash(new_passphrase))
-#  end
-  ##
-  #
-  # Passwords are hased, so compute the hash when assigning it.
-  #
-#  def passphrase_confirmation= new_passphrase
-#    @passphrase_confirmation = pw_hash(new_passphrase)
-#  end
-  ##
-  #
-  # Login with the given login and passphrase.
-  # Will return a user instance or nil.
-  #
-#  def self.login options
-#    options.symbolize_keys!
-#    passphrase = options[:passphrase]
-#    login = options[:login].downcase
-#    scope = options[:scope] || self
-#
-#    u = scope.find(
-#          :first,
-#          :conditions => {User.table_name => {:lowercase_login =>login}}
-#        )
-#    if (u and (u.passphrase == pw_hash(passphrase)))
-#      u.update_attribute :last_login, Time.now
-#      u
-#    else
-#      nil
-#    end
-#  end
-#  def pw_hash str
-#    self.class.pw_hash(str)
-#  end
-#  def self.pw_hash str
-#    Digest::MD5.hexdigest(str)
-#  end
-#  def passphrase_confirmation_match
-#    unless @passphrase_confirmation == passphrase
-#      errors.add(:passphrase, 'does not match confirmation')
-#    end
-#  end
-
+  validates_uniqueness_of :login,
+                          :case_sensitive => false,
+                          :identifier => 'unique_login'
+  validates_uniqueness_of :email,
+                          :allow_blank => true,
+                          :identifier => 'unique_email'
+  validates_uniqueness_of :security_token,
+                          :allow_blank => true,
+                          :identifier => 'unique_security_token'
 
 
   attr_reader :error_message
@@ -104,77 +51,17 @@ class User < ActiveRecord::Base
 
   named_scope :verified, {:conditions => {:verified => true}}
   named_scope :unverified, {:conditions => {:verified => false}}
-  named_scope :disabled,
-              lambda{
-                # TODO OPTIMIZE make sure an index is on disabled_item_type
-                # and if using mysql do "BINARY 'USER'" to use index
-                cond = merge_conditions({
-                         'disabled_periods.disabled_item_type' => 'User'
-                       })
-                # This requires ActiveRecord stores in GMT (default)
-                now = Time.now.gmtime
-                {
-                  :joins => [
-                    "LEFT JOIN disabled_periods ON #{cond} " +
-                    "AND disabled_periods.disabled_item_id = #{self.class.table_name}.id"
-                  ],
-                  :conditions => [
-                    'disabled_periods.disabled_from <= ? ' +
-                    'AND (disabled_periods.disabled_until > ? ' +
-                    'OR disabled_periods.disabled_until IS NULL)',
-                    now, now
-                  ]
-                }
-              }
-  named_scope :active,
-              lambda{
-                now = Time.now.gmtime
-                cond = merge_conditions(
-                         {'disabled_periods.disabled_item_type' => 'User'},
-                         [
-                           'disabled_periods.disabled_from <= ? ' +
-                           'AND (disabled_periods.disabled_until > ? ' +
-                           'OR disabled_periods.disabled_until IS NULL)',
-                           now, now
-                         ]
-                       )
-                {
-                  :joins => [
-                    "LEFT JOIN disabled_periods ON #{cond} " +
-                    "AND disabled_periods.disabled_item_id = #{self.class.table_name}.id"
-                  ],
-                  :conditions => {'disabled_periods.id' => nil}
-                }
-              }
   named_scope :ordered_by_login, {:order => 'login'}
-
-  ##
-  #
-  # Users can be disabled at points in time.
-  # This checks if they are or not.  It defaults to right now, but could
-  # check any time, but only one disabled period is stored on the record,
-  # so we have no way of checking their historical disabling.
-  #
-  def disabled? time=Time.now
-    return false unless disabled_from
-    return true unless disabled_until
-    return (disabled_from <= time && disabled_until > time)
-  end
-
-  ##
-  #
-  # Disable this user.  It goes into effect right now.  By default it
-  # will diabled them forever, but you can specify and end time.
-  # If you specify a time before the current time, it will be set to nil.
-  #
-  def disable! until_time=nil
-    now = Time.now
-    until_time and (until_time = nil if until_time < now)
-    self.disabled_from = now
-    self.disabled_until = until_time
-    DisabledPeriod.disable! self, now, until_time
-    save!
-  end
+  named_scope :for_login, proc{|l|
+    {:conditions => {:lowercase_login => l.downcase}}
+  }
+  named_scope :for_security_token, proc{|tok|
+    {:conditions => [
+      'security_token = ? AND ' +
+      '(security_token_valid_until >= ? OR security_token_valid_until IS NULL)',
+      tok, Time.now
+    ]}
+  }
 
   ##
   #
@@ -224,20 +111,6 @@ class User < ActiveRecord::Base
 
   ##
   #
-  # Find by security token, if token has not expired
-  #
-  def self.for_security_token tok
-    find(
-      :first,
-      :conditions => [
-        'security_token = ? AND (security_token_valid_until >= ? or security_token_valid_until IS NULL)',
-        tok, Time.now
-      ]
-    )
-  end
-
-  ##
-  #
   # Mark the record as verified
   #
   def verify!
@@ -250,6 +123,7 @@ class User < ActiveRecord::Base
   #
   def security_token
     unless read_attribute(:security_token)
+      # make sure to save it immedietely if we need to
       if new_record?
         self.security_token = generate_security_token
       else
@@ -257,6 +131,13 @@ class User < ActiveRecord::Base
       end
     end
     read_attribute(:security_token)
+  end
+
+  # This method is used by authentication modules.
+  # Make sure the user is validated.
+  # This can be chained around by other plugins.
+  def self.authentication_scope
+    self.verified
   end
 
   private
@@ -273,8 +154,8 @@ class User < ActiveRecord::Base
     end
   end
 
-  def set_security_token_if_verification_needed
-    if UserSystem.verify_email
+  def set_security_token_if_needed
+    if UserSystem.verify_email or UserSystem.always_generate_security_token
       self.security_token = generate_security_token
     end
   end
