@@ -69,26 +69,6 @@ module UserSystemLoginFilters
       redirect_to login_url_for_this_controller
       return
     end
-
-    validate_user(current_user)
-  end
-
-  #
-  # During login filter checking, stop processing if the user is not verified
-  # or is disabled, etc.
-  #
-  def validate_user current_user
-    if current_user.disabled?
-      redirect_to inform_disabled_user_path(current_user)
-      return false
-    end
-
-    if !current_user.verified? and UserSystem.verify_email
-      redirect_to request_verification_user_path(current_user)
-      return false
-    end
-
-    true
   end
 
   def login_url_for_this_controller
