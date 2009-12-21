@@ -21,7 +21,7 @@
 
 begin
   require 'rcov/rcovtask'
-rescue
+rescue LoadError
   # do nothing
 end
 
