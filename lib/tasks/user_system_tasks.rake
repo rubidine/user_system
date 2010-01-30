@@ -29,8 +29,8 @@ namespace :user_system do
 
   desc "Run migrations for the UserSystem Extension"
   task :migrate => :environment do
-    require File.join(File.dirname(__FILE__), '..', 'ext_lib', 'plugin_migrator')
-    ActiveRecord::PluginMigrator.migrate(File.join(File.dirname(__FILE__), '..', 'db', 'migrate'), ENV['VERSION'] ? ENV['VERSION'].to_i : nil)
+    require File.join(File.dirname(__FILE__), '..', '..', 'db', 'user_system_migrator')
+    UserSystemMigrator.migrate(File.join(File.dirname(__FILE__), '..', '..', 'db', 'migrate'), ENV['VERSION'] ? ENV['VERSION'].to_i : nil)
   end
 
   desc 'Test the UserSystem Extension.'

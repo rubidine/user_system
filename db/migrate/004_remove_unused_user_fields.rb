@@ -1,11 +1,12 @@
 class RemoveUnusedUserFields < ActiveRecord::Migration
   def self.up
-    remove_column User.table_name, :passphrase
-    remove_column User.table_name, :reset_passphrase
+    if User.columns.select{|x| x.name == 'passphrase'}
+      remove_column User.table_name, :passphrase
+      remove_column User.table_name, :reset_passphrase
+    end
   end
 
   def self.down
-    add_column User.table_name, :passphrase, :string
-    add_column User.table_name, :reset_passphrase, :string
+    # do nothing, it is smart enough to skip when unneeded
   end
 end

@@ -1,4 +1,4 @@
-# Copyright (c) 2008 Todd Willey <todd@rubidine.com>
+# Copyright (c) 2009 Todd Willey <todd@rubidine.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -19,22 +19,31 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-class CreateUsers < ActiveRecord::Migration
-  def self.up
-    create_table User.table_name do |t|
-      # basic census information
-      t.string :login, :nickname, :email, :lowercase_login
-      t.datetime :last_login
-      t.timestamps 
-
-      # security
-      t.string :security_token
-      t.boolean :verified
-      t.datetime :security_token_valid_until
+class UserSystemMigrator < ActiveRecord::Migrator
+  def initialize direction, migrations_path, target_version=nil
+    unless ActiveRecord::Base.connection.supports_migrations?
+      raise StandardError.new("This database does not yet support migrations")
     end
+    initialize_schema_migrations_table(ActiveRecord::Base.connection)
+    @direction, @migrations_path, @target_version = direction, migrations_path, target_version
   end
 
-  def self.down
-    drop_table User.table_name
+  def self.schema_migrations_table_name
+    'plugin_schema_migrations_user_system'
+  end
+
+  private
+  def initialize_schema_migrations_table connection
+    name = self.class.schema_migrations_table_name
+    return if connection.tables.detect{|t| t == name}
+    connection.create_table(name, :id => false) do |t|
+      t.column :version, :string, :null => false
+    end
+    connection.add_index(
+      name,
+      :version,
+      :unique => true,
+      :name => "unique_schema_us_local_cred"
+    )
   end
 end
