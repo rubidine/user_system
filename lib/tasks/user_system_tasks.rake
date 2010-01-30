@@ -35,7 +35,7 @@ namespace :user_system do
 
   desc 'Test the UserSystem Extension.'
   Rake::TestTask.new(:test) do |t|
-    t.ruby_opts << "-r#{RAILS_ROOT}/test/test_helper"
+    t.ruby_opts << "-r#{Rails.root}/test/test_helper"
     t.libs << File.join(File.dirname(__FILE__), '..', 'lib')
     t.pattern = File.join(File.dirname(__FILE__), '..', 'test/**/*_test.rb')
     t.verbose = true
@@ -43,7 +43,7 @@ namespace :user_system do
 
   desc 'Test the UserSystem Extension (only unit tests).'
   Rake::TestTask.new('test:units') do |t|
-    t.ruby_opts << "-r#{RAILS_ROOT}/test/test_helper"
+    t.ruby_opts << "-r#{Rails.root}/test/test_helper"
     t.libs << File.join(File.dirname(__FILE__), '..', 'lib')
     t.pattern = File.join(File.dirname(__FILE__), '..', 'test/unit/*_test.rb')
     t.verbose = true
@@ -51,7 +51,7 @@ namespace :user_system do
 
   desc 'Test the UserSystem Extension (only functional tests).'
   Rake::TestTask.new('test:functionals') do |t|
-    t.ruby_opts << "-r#{RAILS_ROOT}/test/test_helper"
+    t.ruby_opts << "-r#{Rails.root}/test/test_helper"
     t.libs << File.join(File.dirname(__FILE__), '..', 'lib')
     t.pattern = File.join(File.dirname(__FILE__), '..', 'test/functional/*_test.rb')
     t.verbose = true
