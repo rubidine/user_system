@@ -29,6 +29,7 @@ class User < ActiveRecord::Base
 
   before_create :mark_as_verified_if_email_verification_not_required
   before_create :set_security_token_if_needed
+  before_create :set_default_nickname
   before_save :set_lowercase_login
 
   validate :presence_of_email_if_required_or_explicitly_validated
@@ -173,4 +174,9 @@ class User < ActiveRecord::Base
   def set_lowercase_login
     self.lowercase_login = self.login.downcase
   end
+
+  def set_default_nickname
+    self.nickname ||= login
+  end
+
 end
