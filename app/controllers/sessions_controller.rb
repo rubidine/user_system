@@ -19,6 +19,69 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+##
+#
+# == Overview
+#
+# SessionsController performs authentication and is configurable by
+# writing some inheritable attributes or by inheriting from it.
+#
+# Most of the heavly lifting is done in UserAuthentication, which looks
+# at the configuration you specify and calls into the appropriate
+# authentication backend.
+#
+# It is possible to have many subclasses of SessionsController in your
+# application, each providing a different mechanism for authentication.
+#
+# == Example of single authentication endpoint
+#
+# Example using an initializer to set authentication mechanism, in
+# this case using twitter oauth authentication to access the site:
+#
+# <tt>config/initializers/session_auth.rb</tt>
+#
+#    SessionsController.write_inheritable_attribute(
+#      :auth_module,
+#      UserSystem::TwitterOauth::Authentication
+#    )
+#
+# == Adding a second authentication endpoint
+# 
+# Example using a subclass to provide an authentication mechanism, in this
+# case using a single sign on server:
+#
+# <tt>app/controllers/sso_sessions_controller.rb</tt>
+#
+#   class SsoSessionsController < SessionsController
+#     write_inheritable_attribute(:auth_module, Sso::UserSystemAuthentication)
+#   end
+#
+# == Example of directing different controllers to different endpoints
+#
+# Example telling InternalDataController to use SsoSessionsController, and
+# MemberDataController will still use SessionsController.
+#
+#   class InternalDataController < ApplicationController
+#     write_inheritable_attribute(
+#       :login_url_helper,
+#       :new_sso_sessions_path
+#     )
+#     write_inheritable_attribute(
+#       :login_post_url_helper,
+#       :sso_sessions_path
+#     )
+#   end
+#
+# == Creating an auth module
+#
+# Auth modules that SessionsController use for authentication should provide
+# a self.login(this_controller) method.  There are a number of methods in
+# the calling controller that it can make use of:
+#
+# * this_controller.params
+# * this_controller.send(:user_scope)
+# * this_controller.send(:session_model_for_this_controller)
+#
 class SessionsController < ApplicationController
 
   skip_before_filter :require_login

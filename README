@@ -6,7 +6,8 @@ all the knowledge about a user (login, email, verification status, etc)
 and a Session model that is stored in the session to associate a user
 with access to the site.
 
-Authentication is layered on top by other plugins.
+Authentication is layered on top by other plugins.  See 
+user_system_local_credentials for an example.
 
 Requires
 --------
