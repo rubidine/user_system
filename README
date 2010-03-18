@@ -1,5 +1,4 @@
 UserSystem
-==========
 
 A framework for user interactions.  There is a User model that handles
 all the knowledge about a user (login, email, verification status, etc)
@@ -9,22 +8,19 @@ with access to the site.
 Authentication is layered on top by other plugins.  See 
 user_system_local_credentials for an example.
 
-Setup
------
+== Setup
 rake user_system:migrate
 
-Requires
---------
+== Requires
 view_extender: http://github.com/xtoddx/view_extender/tree/master
 
-Testing
--------
+== Testing
 Be sure you add the required gems to config/environments/test.rb
 
   config.gem "thoughtbot-factory_girl",
              :lib    => "factory_girl",
              :source => "http://gems.github.com"
-
+  
   config.gem 'mocha'
-
+  
   config.gem 'test_spec', :lib => 'test/spec'
