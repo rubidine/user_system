@@ -9,6 +9,10 @@ with access to the site.
 Authentication is layered on top by other plugins.  See 
 user_system_local_credentials for an example.
 
+Setup
+-----
+rake user_system:migrate
+
 Requires
 --------
 view_extender: http://github.com/xtoddx/view_extender/tree/master

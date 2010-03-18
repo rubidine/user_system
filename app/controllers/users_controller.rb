@@ -20,7 +20,10 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #
-# Create user accounts
+# Create user accounts with this.
+#
+# Plugins can extend the forms with view_extender.  See the view files and
+# the view_extender documentation for more information.
 #
 class UsersController < ApplicationController
 

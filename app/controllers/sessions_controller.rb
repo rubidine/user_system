@@ -79,8 +79,37 @@
 # the calling controller that it can make use of:
 #
 # * this_controller.params
+#
+# From UserAuthentication
 # * this_controller.send(:user_scope)
+#
+# From UserSystemLoginFilters
 # * this_controller.send(:session_model_for_this_controller)
+# * this_controller.send(:user_model_for_this_controller)
+#
+# == Authenticating from a different model
+#
+#   class PhysicianDocumentsController < ApplicationController
+#     write_inheritable_attribute(
+#       :login_url_helper,
+#       :new_physician_sessions_path
+#     )
+#     write_inheritable_attribute(
+#       :login_post_url_helper,
+#       :physician_sessions_path
+#     )
+#     write_inheritable_attribute(
+#       :user_model,
+#       :physician
+#     )
+#   end
+#   
+#   class PhysicianSessionsController < SessionsController
+#     write_inheritable_attribute(
+#       :user_model,
+#       :physician
+#     )
+#   end
 #
 class SessionsController < ApplicationController
 
