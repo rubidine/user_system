@@ -125,7 +125,7 @@ class SessionsController < ApplicationController
   include UserRedirect
 
   def new
-    render '/sessions/new'
+    render :template => '/sessions/new'
   end
 
   def create
@@ -137,14 +137,14 @@ class SessionsController < ApplicationController
       flash.now[:error] = "Unable to login. " +
                       "Ensure your login name and passphrase are correct.  " +
                       "Passphrases are case-sensitive"
-      render '/sessions/new'
+      render :template => '/sessions/new'
     end
   end
 
   def destroy
     session[:session_id] = nil
     session[:user_id] = nil
-    render '/sessions/new'
+    render :template => '/sessions/new'
   end
   alias :end :destroy
 
