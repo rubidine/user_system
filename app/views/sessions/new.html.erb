@@ -1,11 +1,13 @@
-<%= render '/sessions/form' %>
-
-<ul class="user-login-links">
-  <% if UserSystem.public_account_creation -%>
-    <li> <%= link_to 'Signup', new_user_url %> </li>
-  <% end -%>
-  <li> <%= link_to 'Recover lost credentials', recover_users_url %> </li>
-</ul>
+<% extension_point 'user_system/sessions/new' do %>
+  <%= render '/sessions/form' %>
+  
+  <ul class="user-login-links">
+    <% if UserSystem.public_account_creation -%>
+      <li> <%= link_to 'Signup', new_user_url %> </li>
+    <% end -%>
+    <li> <%= link_to 'Recover lost credentials', recover_users_url %> </li>
+  </ul>
+<% end %>
 <%#
 # Copyright (c) 2008 Todd Willey <todd@rubidine.com>
 # 

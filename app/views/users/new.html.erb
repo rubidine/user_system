@@ -20,10 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 -%>
-<%= error_messages_for :user %>
-
-<%= extension_point '/users/new/top' %>
-
-<%= render :partial => 'form' %>
-
-<%= extension_point '/users/new/bottom' -%>
+<% extension_point 'user_system/users/new' do %>
+  <%= error_messages_for :user %>
+  <%= render :partial => 'form' %>
+<% end %>
