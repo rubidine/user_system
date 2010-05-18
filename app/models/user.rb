@@ -97,6 +97,18 @@ class User < ActiveRecord::Base
     write_attribute :verified, false if UserSystem.verify_email and !new_record?
   end
 
+  ##
+  #
+  # Mark the login time and do some other housekeeping.
+  # This should be called by each authentication module.
+  #
+  def logged_in auth_module
+    update_attributes(
+      :last_login => Time.now,
+      :previous_login => last_login
+    )
+    sessions.clear
+  end
 
   ##
   #
