@@ -22,6 +22,10 @@
 require File.join(File.dirname(__FILE__), 'lib', 'user_system')
 # require 'digest/md5'
 
+if RAILS_ENV == "test"
+  config.gem "factory_girl"
+end
+
 # Monkey patch into the core classes.
 #
 # There are two ways to do this, if you are patching into a core class

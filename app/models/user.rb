@@ -51,7 +51,8 @@ class User < ActiveRecord::Base
   attr_protected :verified, :disabled_from, :disabled_until
 
   named_scope :verified, {:conditions => {:verified => true}}
-  named_scope :unverified, {:conditions => {:verified => false}}
+  named_scope :unverified,
+              {:conditions => ['verified IS NULL OR verified = ?', false]}
   named_scope :ordered_by_login, {:order => 'login'}
   named_scope :for_login, proc{|l|
     {:conditions => {:lowercase_login => l.downcase}}
