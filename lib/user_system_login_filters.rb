@@ -68,6 +68,8 @@ module UserSystemLoginFilters
       flash[:notice] = 'You need to login to proceed.'
       redirect_to login_url_for_this_controller
       return
+    else
+      true
     end
   end
 
