@@ -1,5 +1,5 @@
 # Copyright (c) 2008 Todd Willey <todd@rubidine.com>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -46,7 +46,7 @@
 #    )
 #
 # == Adding a second authentication endpoint
-# 
+#
 # Example using a subclass to provide an authentication mechanism, in this
 # case using a single sign on server:
 #
@@ -103,7 +103,7 @@
 #       :physician
 #     )
 #   end
-#   
+#
 #   class PhysicianSessionsController < SessionsController
 #     write_inheritable_attribute(
 #       :user_model,

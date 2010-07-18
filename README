@@ -20,7 +20,7 @@ Be sure you add the required gems to config/environments/test.rb
   config.gem "thoughtbot-factory_girl",
              :lib    => "factory_girl",
              :source => "http://gems.github.com"
-  
+
   config.gem 'mocha'
-  
+
   config.gem 'test_spec', :lib => 'test/spec'

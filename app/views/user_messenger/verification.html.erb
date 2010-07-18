@@ -22,7 +22,7 @@
 -%>
 <% extension_point 'user_system/user_messenger/verification' do %>
   Thank you for registering at <%= UserSystem.site_name %>.
-  
+
   To confirm your email address and gain access to the site, please visit:
   <%= verify_user_path(@user_record) %>
 <% end %>
