@@ -77,7 +77,7 @@ class UsersController < ApplicationController
     unless user
       respond_to do |format|
         format.html do
-          flash[:notice] = "Invalid verification code"
+          flash.now[:notice] = "Invalid verification code"
         end
       end
       return
@@ -86,7 +86,6 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       format.html do
-        flash[:notice] = 'Email Address Verification Complete'
         user_redirect(user)
       end
     end
@@ -125,7 +124,7 @@ class UsersController < ApplicationController
       return
     end
     @user.update_security_token! 20.minutes
-    @user.update_attribute :reset_passphrase, true
+#    @user.update_attribute :reset_passphrase, true
     UserMessenger.deliver_recovery(@user)
 
     respond_to :html

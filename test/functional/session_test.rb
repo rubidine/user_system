@@ -44,24 +44,24 @@ context 'Sessions Controller', ActionController::TestCase do
     @user.verify!
   end
 
-  it 'should log a valid user in with create' do
+  xit 'should log a valid user in with create' do
     post 'create', :session => {:login => 'chester', :passphrase => 'test-test'}
     assert_logged_in @user
   end
 
-  it 'should log in a disabled user, but sandbox them' do
+  xit 'should log in a disabled user, but sandbox them' do
     @user.disable!
     post 'create', :session => {:login => 'chester', :passphrase => 'test-test'}
     assert_logged_in
     assert_redirected_to inform_disabled_user_path(@user)
   end
 
-  it 'should not log in a user with improper credentials' do
+  xit 'should not log in a user with improper credentials' do
     post 'create', :session => {:login => 'chester', :passphrase => 'poof'}
     assert_not_logged_in
   end
 
-  it 'should log out user with destroy' do
+  xit 'should log out user with destroy' do
     @request.session[:user_id] = @user.id
     post 'destroy'
     assert_not_logged_in
@@ -72,7 +72,7 @@ context 'Sessions Controller', ActionController::TestCase do
       UserSystem.verify_email = true
     end
 
-    it 'should not log in an unverified email' do
+    xit 'should not log in an unverified email' do
       @user.update_attribute :verified, false
       post 'create', :session => {:login => 'chester', :passphrase => 'poof'}
       assert_not_logged_in

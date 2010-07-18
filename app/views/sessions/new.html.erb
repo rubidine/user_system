@@ -1,8 +1,10 @@
-<%= render 'form' %>
+<%= render '/sessions/form' %>
 
 <ul class="user-login-links">
-  <li> <%= link_to 'Signup', new_user_url %> </li>
-  <li> <%= link_to 'Recover lost password', recover_users_url %> </li>
+  <% if UserSystem.public_account_creation -%>
+    <li> <%= link_to 'Signup', new_user_url %> </li>
+  <% end -%>
+  <li> <%= link_to 'Recover lost credentials', recover_users_url %> </li>
 </ul>
 <%#
 # Copyright (c) 2008 Todd Willey <todd@rubidine.com>

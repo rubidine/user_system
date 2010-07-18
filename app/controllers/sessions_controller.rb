@@ -21,14 +21,22 @@
 
 class SessionsController < ApplicationController
 
-  filter_parameter_logging :passphrase
   skip_before_filter :require_login
+
+  # DEFAULT CONFIGURATION
+  #   self.auth_module = PasswordAuthentication
+  #   self.session_model = Session
+  #   self.user_model = User
+  #   self.login_url = nil
+  #   self.login_url_helper = :sessions_url
+  include UserAuthentication
   include UserRedirect
 
   def create
-    if u = perform_user_login
-      session[:user_id] = u.id
-      user_redirect(u)
+    if s = create_session
+      session[:session_id] = s.id
+      session[:user_id] = s.user_id
+      user_redirect(s.user)
     else
       flash.now[:error] = "Unable to login. " +
                       "Ensure your login name and passphrase are correct.  " +
@@ -38,18 +46,10 @@ class SessionsController < ApplicationController
   end
 
   def destroy
+    session[:session_id] = nil
     session[:user_id] = nil
-    flash.now[:notice] = "You are now logged out"
     redirect_to :action => 'new'
   end
   alias :end :destroy
 
-  private
-  def perform_user_login
-    User.login(params[:session].merge(:scope => login_scope))
-  end
-
-  def login_scope
-    User
-  end
 end

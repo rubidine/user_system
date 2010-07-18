@@ -1,4 +1,5 @@
 require File.join(File.dirname(__FILE__), '..', 'user_system_test_helper')
+require File.join(File.dirname(__FILE__), '..', '..', 'lib', 'user_redirect')
 
 context 'A class including UserRedirect', ActiveSupport::TestCase do
   setup do
@@ -13,7 +14,6 @@ context 'A class including UserRedirect', ActiveSupport::TestCase do
 
     @user = Factory(:user)
     @user.verified = true
-    @user.reset_passphrase = false
   end
 
   it 'should not have an empty callback chain' do
@@ -22,6 +22,7 @@ context 'A class including UserRedirect', ActiveSupport::TestCase do
 
   it 'should walk through callbacks when redirecting' do
     M.on_redirection_callback_chain.each{|c| @kls.expects(c.method) }
+    @kls.stubs(:root_path).returns('/')
     @kls.send(:user_redirect, @user)
   end
 

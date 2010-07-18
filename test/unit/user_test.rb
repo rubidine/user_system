@@ -26,28 +26,6 @@ context 'User', ActiveSupport::TestCase do
     @user = Factory(:user)
   end
 
-  it 'can be disabled' do
-    RAILS_DEFAULT_LOGGER.error 'XXXXXXX DISABLING A USER'
-    assert User.active.find_by_id(@user.id)
-    @user.disable!
-
-    assert @user.disabled?
-    @user.reload
-    assert @user.disabled?
-
-    assert User.disabled.find_by_id(@user.id)
-  end
-
-  it 'requires passphrase_confirmation to create account' do
-    atr = Factory.attributes_for(:user)
-    atr.symbolize_keys!
-    atr.delete(:passphrase_confirmation)
-    atr[:login] = 'chester2'
-    u = User.new(atr)
-    u.valid?
-    assert u.errors.on(:passphrase)
-  end
-
   it 'can change login case' do
     @user.login = 'ChEsTeR'
     assert_equal 'ChEsTeR', @user.login
@@ -66,7 +44,7 @@ context 'User', ActiveSupport::TestCase do
     assert u.errors.on(:login)
   end
 
-  it 'should login regardless of login case given' do
+  xit 'should login regardless of login case given' do
     assert User.login(:login => 'CHESTer', :passphrase => 'test-test')
   end
 
@@ -81,7 +59,7 @@ context 'User', ActiveSupport::TestCase do
       assert (user.errors.on(:email) || user.errors.on(:login))
     end
 
-    it 'should login with an email' do
+    xit 'should login with an email' do
       assert User.login(:login => 'chester@tatft.com', :passphrase => 'test-test')
     end
   end
@@ -92,7 +70,7 @@ context 'User', ActiveSupport::TestCase do
       UserSystem.email_is_login = false
     end
 
-    it 'should perform login without giving email adress' do
+    xit 'should perform login without giving email adress' do
       Factory(:user)
       assert User.login(:login => 'chester', :passphrase => 'test-test')
     end

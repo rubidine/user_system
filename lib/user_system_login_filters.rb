@@ -39,7 +39,9 @@ module UserSystemLoginFilters
   # This is the fallback case.  It can be alias-chained by other plugins.
   #
   def lookup_user
-    UserSystem.dont_use_session ? nil : User.find_by_id(session[:user_id])
+    self.class.send(:session_model_for_this_controller).find_by_id(
+      session[:session_id]
+    ).try(:user)
   end
 
   #
@@ -48,8 +50,8 @@ module UserSystemLoginFilters
   #
   def require_login
     unless current_user
-      session[:last_params] = params unless UserSystem.dont_use_session
-      redirect_to new_session_url
+      session[:last_params] = params
+      redirect_to login_url_for_this_controller
       return
     end
 
@@ -63,32 +65,30 @@ module UserSystemLoginFilters
     if !current_user or (!valid_users.empty? and !valid_users.include?(current_user))
       # TODO: if current_user, but not valid, use 403, otherwise 401
       session[:last_params] = params
-      unless UserSystem.dont_use_session
-        flash[:notice] = 'You need to login to proceed.'
-      end
-      redirect_to new_session_url
+      flash[:notice] = 'You need to login to proceed.'
+      redirect_to login_url_for_this_controller
       return
+    else
+      true
     end
-
-    validate_user(current_user)
   end
 
-  #
-  # During login filter checking, stop processing if the user is not verified
-  # or is disabled, etc.
-  #
-  def validate_user current_user
-    if current_user.disabled?
-      redirect_to inform_disabled_user_path(current_user)
-      return false
+  def login_url_for_this_controller
+    rv = self.class.read_inheritable_attribute(:login_url)
+    if h=self.class.read_inheritable_attribute(:login_url_helper)
+      rv = self.send(h)
     end
+    rv ||= new_session_url
+    rv
+  end
 
-    if !current_user.verified? and UserSystem.verify_email
-      redirect_to request_verification_user_path(current_user)
-      return false
+  def login_post_url_for_this_controller
+    rv = self.class.read_inheritable_attribute(:login_post_url)
+    if h=self.class.read_inheritable_attribute(:login_post_url_helper)
+      rv = self.send(h)
     end
-
-    true
+    rv ||= sessions_url
+    rv
   end
 
   module ClassMethods
@@ -117,7 +117,20 @@ module UserSystemLoginFilters
 
     # internal helper
     def userify(str_or_user)
-      to_model(str_or_user, User, :find_by_name)
+      to_model(str_or_user, user_model_for_this_controller, :find_by_name)
+    end
+
+    def auth_module_for_this_controller
+      read_inheritable_attribute(:auth_module)
+    end
+
+    def session_model_for_this_controller
+      read_inheritable_attribute(:session_model) || Session
+    end
+
+    def user_model_for_this_controller
+      atr = read_inheritable_attribute(:user_model)
+      atr ? atr.to_s.camelize.constantize : User
     end
   end
 

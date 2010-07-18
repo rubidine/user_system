@@ -21,24 +21,20 @@
 
 class CreateUsers < ActiveRecord::Migration
   def self.up
-    create_table :users do |t|
+    create_table User.table_name do |t|
       # basic census information
       t.string :login, :nickname, :email, :lowercase_login
       t.datetime :last_login
       t.timestamps 
 
       # security
-      t.string :security_token, :passphrase
-      t.boolean :verified, :reset_passphrase
+      t.string :security_token
+      t.boolean :verified
       t.datetime :security_token_valid_until
-      
-      # account disabled information
-      t.timestamp :disabled_from, :disabled_until
-      t.string :disabled_message
     end
   end
 
   def self.down
-    drop_table :users
+    drop_table User.table_name
   end
 end

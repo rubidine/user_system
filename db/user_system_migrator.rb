@@ -1,4 +1,4 @@
-# Copyright (c) 2008 Todd Willey <todd@rubidine.com>
+# Copyright (c) 2009 Todd Willey <todd@rubidine.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -17,26 +17,33 @@
 # NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-module UserSystemRoutingExtension
-
-  def draw_with_user_system
-    draw_without_user_system do |map|
-      if @user_system_route_block
-        @user_system_route_block.call(map)
-      end
-      yield map
+class UserSystemMigrator < ActiveRecord::Migrator
+  def initialize direction, migrations_path, target_version=nil
+    unless ActiveRecord::Base.connection.supports_migrations?
+      raise StandardError.new("This database does not yet support migrations")
     end
+    initialize_schema_migrations_table(ActiveRecord::Base.connection)
+    @direction, @migrations_path, @target_version = direction, migrations_path, target_version
   end
 
-  def define_user_system_routes &blk
-    @user_system_route_block = blk
+  def self.schema_migrations_table_name
+    'plugin_schema_migrations_user_system'
   end
 
-  public
-  def self.included(base)
-    base.send :alias_method_chain, :draw, :user_system
+  private
+  def initialize_schema_migrations_table connection
+    name = self.class.schema_migrations_table_name
+    return if connection.tables.detect{|t| t == name}
+    connection.create_table(name, :id => false) do |t|
+      t.column :version, :string, :null => false
+    end
+    connection.add_index(
+      name,
+      :version,
+      :unique => true,
+      :name => "unique_schema_us_local_cred"
+    )
   end
-
 end

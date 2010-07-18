@@ -28,7 +28,8 @@ context 'The Login Filter', ActiveSupport::TestCase do
     end
     @kls = M.new
     @user = Factory(:user)
-    @kls.stubs(:session).returns({:user_id => @user.id})
+    @session = Session.create!(:user => @user)
+    @kls.stubs(:session).returns({:session_id => @user.id})
   end
 
   it 'should return the current user from the session' do
@@ -43,30 +44,6 @@ context 'The Login Filter', ActiveSupport::TestCase do
 
     @kls.expects(:redirect_to).with('NEW_SESSION_URL')
     @kls.send(:require_login)
-  end
-
-  it 'should stop processing if user is disabled' do
-    @kls.stubs(:session).returns({:user_id => @user.id})
-    @kls.stubs(:inform_disabled_user_path).returns('EXPECTED_PATH')
-
-    @user.disable!
-    @kls.expects(:redirect_to).with('EXPECTED_PATH')
-    @kls.send(:require_login)
-  end
-
-  context 'When email validation is turned on', ActiveSupport::TestCase do
-    setup do
-      UserSystem.verify_email = true
-    end
-
-    it 'should stop processing if user is not verified' do
-      @kls.stubs(:session).returns({:user_id => @user.id})
-      @kls.stubs(:request_verification_user_path).returns('PAFF')
-      @user.update_attribute :verified, false
-      @kls.expects(:redirect_to).with('PAFF')
-      @kls.send(:require_login)
-    end
-
   end
 
 end
