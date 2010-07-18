@@ -31,6 +31,10 @@ class CreateUsers < ActiveRecord::Migration
       t.string :security_token
       t.boolean :verified
       t.datetime :security_token_valid_until
+
+      # account disabled information
+      t.timestamp :disabled_from, :disabled_until
+      t.string :disabled_message
     end
   end
 

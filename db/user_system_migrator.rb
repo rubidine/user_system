@@ -43,7 +43,7 @@ class UserSystemMigrator < ActiveRecord::Migrator
       name,
       :version,
       :unique => true,
-      :name => "unique_schema_us_local_cred"
+      :name => "unique_schema_usersystem"
     )
   end
 end

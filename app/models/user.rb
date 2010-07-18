@@ -29,6 +29,7 @@ class User < ActiveRecord::Base
 
   before_create :mark_as_verified_if_email_verification_not_required
   before_create :set_security_token_if_needed
+  before_create :set_default_nickname
   before_save :set_lowercase_login
 
   validate :presence_of_email_if_required_or_explicitly_validated
@@ -50,7 +51,8 @@ class User < ActiveRecord::Base
   attr_protected :verified, :disabled_from, :disabled_until
 
   named_scope :verified, {:conditions => {:verified => true}}
-  named_scope :unverified, {:conditions => {:verified => false}}
+  named_scope :unverified,
+              {:conditions => ['verified IS NULL OR verified = ?', false]}
   named_scope :ordered_by_login, {:order => 'login'}
   named_scope :for_login, proc{|l|
     {:conditions => {:lowercase_login => l.downcase}}
@@ -96,6 +98,18 @@ class User < ActiveRecord::Base
     write_attribute :verified, false if UserSystem.verify_email and !new_record?
   end
 
+  ##
+  #
+  # Mark the login time and do some other housekeeping.
+  # This should be called by each authentication module.
+  #
+  def logged_in auth_module
+    update_attributes(
+      :last_login => Time.now,
+      :previous_login => last_login
+    )
+    sessions.clear
+  end
 
   ##
   #
@@ -173,4 +187,9 @@ class User < ActiveRecord::Base
   def set_lowercase_login
     self.lowercase_login = self.login.downcase
   end
+
+  def set_default_nickname
+    self.nickname ||= login
+  end
+
 end

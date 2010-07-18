@@ -20,4 +20,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 -%>
-Your account is disabled.
+<% extension_point 'user_system/users/inform_disabled' do %>
+  Your account is disabled.
+<% end %>

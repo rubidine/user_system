@@ -20,4 +20,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 -%>
-Recovery sent to <%= @user.email %>.
+<% extension_point 'user_system/users/recovery_sent' do %>
+  Recovery sent to <%= @user.email %>.
+<% end %>

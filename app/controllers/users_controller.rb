@@ -19,6 +19,12 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#
+# Create user accounts with this.
+#
+# Plugins can extend the forms with view_extender.  See the view files and
+# the view_extender documentation for more information.
+#
 class UsersController < ApplicationController
 
   skip_before_filter :require_login

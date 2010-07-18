@@ -19,6 +19,26 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
-ActionDispatch::Callbacks.to_prepare(:user_system) do
+require File.join(File.dirname(__FILE__), 'lib', 'user_system')
+# require 'digest/md5'
+
+if RAILS_ENV == "test"
+  config.gem "factory_girl"
+end
+
+# Monkey patch into the core classes.
+#
+# There are two ways to do this, if you are patching into a core class
+# like ActiveRecord::Base then you can include a class defined by a file
+# in this plugin's lib directory
+#
+# ActiveRecord::Base.send :include, MyClassInLibDirectory
+#
+# If you are patching a class in the current application, such as a specific
+# model that will get reloaded by the dependencies mechanism (in development
+# mode) you will need your extension to be reloaded each time the application
+# is reset, so use the hook we provide for you.
+#
+ActionController::Dispatcher.to_prepare(:user_system) do
   ApplicationController.send :include, UserSystemLoginFilters
 end

@@ -19,8 +19,10 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Factory.define :user do |u|
-  u.login 'chester'
-  u.nickname 'Chester McTester'
-  u.email 'chester@tatft.com'
+unless Factory.instance_variable_get(:@factories)[:user]
+  Factory.define :user do |u|
+    u.login 'chester'
+    u.nickname 'Chester McTester'
+    u.email 'chester@tatft.com'
+  end
 end
