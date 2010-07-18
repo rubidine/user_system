@@ -123,7 +123,8 @@ class UsersController < ApplicationController
     unless @user
       respond_to do |format|
         format.html do
-          flash[:error] = "Unable to find email address #{@user.email}"
+          flash[:error] = "Unable to find email address " +
+                          "#{params[:user][:email]}"
           render :action => 'recover'
         end
       end
