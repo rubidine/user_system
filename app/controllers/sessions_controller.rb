@@ -70,6 +70,10 @@
 #       :login_post_url_helper,
 #       :sso_sessions_path
 #     )
+#     write_inheritable_attribute(
+#       :login_template,
+#       '/sso_auth/new'
+#     )
 #   end
 #
 # == Creating an auth module
@@ -121,11 +125,12 @@ class SessionsController < ApplicationController
   #   self.user_model = User
   #   self.login_url = nil
   #   self.login_url_helper = :sessions_url
+  #   self.login_template = '/sessions/new'
   include UserAuthentication
   include UserRedirect
 
   def new
-    render :template => '/sessions/new'
+    render :template => login_template_for_this_controller
   end
 
   def create
@@ -137,14 +142,14 @@ class SessionsController < ApplicationController
       flash.now[:error] = "Unable to login. " +
                       "Ensure your login name and passphrase are correct.  " +
                       "Passphrases are case-sensitive"
-      render :template => '/sessions/new'
+      render :template => login_template_for_this_controller
     end
   end
 
   def destroy
     session[:session_id] = nil
     session[:user_id] = nil
-    render :template => '/sessions/new'
+    render :template => login_template_for_this_controller
   end
   alias :end :destroy
 

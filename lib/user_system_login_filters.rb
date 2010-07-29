@@ -91,6 +91,12 @@ module UserSystemLoginFilters
     rv
   end
 
+  def login_template_for_this_controller
+    rv = self.class.read_inheritable_attribute(:login_template)
+    rv ||= "/sessions/new"
+    rv
+  end
+
   module ClassMethods
     #
     # Mark this controller (or certin actions using :only => ...)
